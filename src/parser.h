@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include <algorithm>
 
 enum OPERATION {
     LOAD_CMD,
