@@ -1,4 +1,4 @@
 add_executable(nfa-emp-interpreter
-                    interpreter.cc)
+                    interpreter_debug.cc)
 
 target_link_libraries(nfa-emp-interpreter PUBLIC ${LIBMATA})

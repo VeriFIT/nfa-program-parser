@@ -1,3 +1,6 @@
+#ifndef _PARSER_EMP_H_
+#define _PARSER_EMP_H_
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -102,3 +105,5 @@ std::vector<SSA_Call> parse_program(std::ifstream &input) {
 
     return program;
 }
+
+#endif
