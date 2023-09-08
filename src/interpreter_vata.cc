@@ -17,8 +17,8 @@
 #include <vata/explicit_tree_aut.hh>
 #include <vata/parsing/timbuk_parser.hh>
 
-#include "parser.h"
-#include "interpreter.h"
+#include "interpreter/parser.h"
+#include "interpreter/interpreter.h"
 #include "utils/util.h"
 
 VATA::ExplicitTreeAut mata_to_vata(const mata::nfa::Nfa &nfa, const std::string &header, VATA::Parsing::TimbukParser &parser) {
@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
         automata.push_back(std::string(argv[i]));
     }
 
-    Instance<VATA::ExplicitTreeAut> mataInst;
-    mataInst.mata_to_nfa = [](const mata::IntermediateAut& t) -> VATA::ExplicitTreeAut {
+    Instance<VATA::ExplicitTreeAut> vataInst;
+    vataInst.mata_to_nfa = [](const mata::IntermediateAut& t) -> VATA::ExplicitTreeAut {
         mata::OnTheFlyAlphabet alphabet;
         VATA::Parsing::TimbukParser parser;
 
@@ -74,13 +74,13 @@ int main(int argc, char** argv) {
         TIME_END(construction);
         return aut;
     };
-    mataInst.intersection = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
+    vataInst.intersection = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
         TIME_BEGIN(intersection);
         VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Intersection(a1, a2);
         TIME_END(intersection);
         return aut;
     };
-    mataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {
+    vataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {
         TIME_BEGIN(emptiness_check);
         bool empty = a1.IsLangEmpty();
         TIME_END(emptiness_check);
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
     }
 
     try {
-        Interpreter<VATA::ExplicitTreeAut> interpret(mataInst, automata);
+        Interpreter<VATA::ExplicitTreeAut> interpret(vataInst, automata);
         interpret.run_program(input); 
     } catch (const std::exception &exc) {
         std::cerr << "error: " << exc.what();

@@ -14,8 +14,8 @@
 #include <mata/parser/inter-aut.hh>
 #include <mata/parser/mintermization.hh>
 
-#include "parser.h"
-#include "interpreter.h"
+#include "interpreter/parser.h"
+#include "interpreter/interpreter.h"
 
 
 

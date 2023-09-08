@@ -14,8 +14,8 @@
 #include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
 
-#include "parser.h"
-#include "interpreter.h"
+#include "interpreter/parser.h"
+#include "interpreter/interpreter.h"
 #include "utils/util.h"
 
 
