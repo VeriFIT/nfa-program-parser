@@ -5,4 +5,5 @@ set (CMAKE_CXX_STANDARD 20)
 
 find_library(LIBMATA mata REQUIRED)
 
+add_subdirectory(libvata)
 add_subdirectory(src)

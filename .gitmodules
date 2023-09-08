@@ -1,0 +1,4 @@
+[submodule "libvata"]
+	path = libvata
+	url = https://github.com/jurajsic/libvata.git
+	branch = for-inclusion-testing
