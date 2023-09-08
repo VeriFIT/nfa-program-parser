@@ -22,8 +22,13 @@
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "error: Program expects exactly one argument, try '--help' for help" << std::endl;
+        std::cerr << "error: Program expects at least one argument, try '--help' for help" << std::endl;
         return -1;
+    }
+
+    if (std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help") {
+        std::cout << "arguments: input.emp [aut.mata]*" << std::endl;
+        return 0;
     }
 
     std::string program = std::string(argv[1]);
