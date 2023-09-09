@@ -85,11 +85,26 @@ int main(int argc, char** argv) {
         TIME_END(intersection);
         return aut;
     };
+    vataInst.uni = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
+        TIME_BEGIN(uni);
+        VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Union(a1, a2);
+        TIME_END(uni);
+        return aut;
+    };
     vataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {
         TIME_BEGIN(emptiness_check);
         bool empty = a1.IsLangEmpty();
         TIME_END(emptiness_check);
         return empty;
+    };
+    vataInst.is_included = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> bool {
+        VATA::InclParam inclParams;
+        inclParams.SetAlgorithm(VATA::InclParam::e_algorithm::antichains);
+        inclParams.SetDirection(VATA::InclParam::e_direction::upward);
+        TIME_BEGIN(inclusion_check);
+        bool incl = VATA::ExplicitTreeAut::CheckInclusion(a1, a2, inclParams);
+        TIME_END(inclusion_check);
+        return incl;
     };
 
     std::ifstream input(program);

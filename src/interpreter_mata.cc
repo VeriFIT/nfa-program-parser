@@ -51,11 +51,23 @@ int main(int argc, char** argv) {
         TIME_END(intersection);
         return aut;
     };
+    mataInst.uni = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
+        TIME_BEGIN(uni);
+        mata::nfa::Nfa aut = mata::nfa::uni(a1, a2);
+        TIME_END(uni);
+        return aut;
+    };
     mataInst.is_empty = [](const mata::nfa::Nfa& a1) -> bool {
         TIME_BEGIN(emptiness_check);
         bool empty = mata::nfa::is_lang_empty(a1);
         TIME_END(emptiness_check);
         return empty;
+    };
+    mataInst.is_included = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> bool {
+        TIME_BEGIN(inclusion_check);
+        bool incl = mata::nfa::is_included(a1, a2);
+        TIME_END(inclusion_check);
+        return incl;
     };
 
     std::ifstream input(program);

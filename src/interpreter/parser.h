@@ -29,6 +29,7 @@ const std::map<std::string, OPERATION> STR_OP = {
     {"load_regex", LOAD_REGEX},
 
     {"inter", INTERSECTION},
+    {"union", UNION},
 
     {"is_empty", EMPTINESS_CHECK},
     {"incl", INCLUSION_CHECK},

@@ -80,11 +80,21 @@ int main(int argc, char** argv) {
         TIME_END(intersection);
         return res;
     };
+    awaliInst.uni = [](const automaton_t& a1, const automaton_t& a2) -> automaton_t {
+        TIME_BEGIN(uni);
+        automaton_t res = sum(a1, a2);
+        TIME_END(uni);
+        return res;
+    };
     awaliInst.is_empty = [](const automaton_t& a1) -> bool {
         TIME_BEGIN(emptiness_check);
         bool empty = is_empty(trim(a1));
         TIME_END(emptiness_check);
         return empty;
+    };
+    awaliInst.is_included = [](const automaton_t& a1, const automaton_t& a2) -> bool {
+        // TODO: it seems that awali does not support inclusion checking (just equivalence checking)
+        throw std::runtime_error("awali does not support inclusion check");
     };
 
     std::ifstream input(program);
