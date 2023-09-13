@@ -14,8 +14,10 @@
 
 enum OPERATION {
     LOAD_CMD,
+    LOAD_ALL,
     LOAD_REGEX,
     INTERSECTION,
+    INTERALL,
     UNION,
     COMPLEMENT,
     DETERMINIZATION,
@@ -26,10 +28,13 @@ enum OPERATION {
 
 const std::map<std::string, OPERATION> STR_OP = {
     {"load_automaton", LOAD_CMD},
+    {"load_automata", LOAD_ALL},
     {"load_regex", LOAD_REGEX},
 
     {"inter", INTERSECTION},
     {"union", UNION},
+    {"compl", COMPLEMENT},
+    {"interall", INTERALL},
 
     {"is_empty", EMPTINESS_CHECK},
     {"incl", INCLUSION_CHECK},
@@ -83,8 +88,9 @@ std::vector<SSA_Call> parse_program(std::ifstream &input) {
         if (token == "load_automaton") {
             line_stream >> param;
             program.push_back(SSA_Call{STR_OP.at(token), param, std::vector<Term>{}});
-        }
-        else if (token == "is_empty") {
+        } else if(token == "load_automata") {
+            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{}});
+        } else if (token == "is_empty") {
             line_stream >> param;
             program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
         }

@@ -31,6 +31,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // pool of alphabets
+    std::vector<mata::OnTheFlyAlphabet> alphabets {};
+
     std::string program = std::string(argv[1]);
     std::vector<std::string> automata;
     for(size_t i = 2; i < argc; i++) {
@@ -38,10 +41,12 @@ int main(int argc, char** argv) {
     }
 
     Instance<mata::nfa::Nfa> mataInst;
-    mataInst.mata_to_nfa = [](const mata::IntermediateAut& t) -> mata::nfa::Nfa {
-        mata::OnTheFlyAlphabet alphabet; // TODO: what to do with the alphabet
+    mataInst.mata_to_nfa = [&alphabets](const mata::IntermediateAut& t) -> mata::nfa::Nfa {
+        alphabets.push_back(mata::OnTheFlyAlphabet{});
+        mata::OnTheFlyAlphabet& alphabet = alphabets.back(); // TODO: what to do with the alphabet
         TIME_BEGIN(construction);
         mata::nfa::Nfa aut = mata::nfa::builder::construct(t, &alphabet);
+        aut.alphabet = &alphabet;
         TIME_END(construction);
         return aut;
     };
@@ -51,10 +56,27 @@ int main(int argc, char** argv) {
         TIME_END(intersection);
         return aut;
     };
+    mataInst.inter_all = [](const std::vector<mata::nfa::Nfa>& auts) -> mata::nfa::Nfa {
+        assert(auts.size() > 0);
+        mata::nfa::Nfa tmp = auts[0];
+        TIME_BEGIN(interall);
+        for(size_t i = 1; i < auts.size(); i++) {
+            tmp = mata::nfa::intersection(tmp, auts[i]);
+        }
+        TIME_END(interall);
+        return tmp;
+    };
     mataInst.uni = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
         TIME_BEGIN(uni);
         mata::nfa::Nfa aut = mata::nfa::uni(a1, a2);
         TIME_END(uni);
+        return aut;
+    };
+    mataInst.complement = [](const mata::nfa::Nfa& a1) -> mata::nfa::Nfa {
+        TIME_BEGIN(compl);
+        mata::nfa::Nfa aut = mata::nfa::complement(a1, *a1.alphabet, 
+            {{"algorithm", "classical"}, {"minimize", "false"}});
+        TIME_END(compl);
         return aut;
     };
     mataInst.is_empty = [](const mata::nfa::Nfa& a1) -> bool {

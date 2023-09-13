@@ -1,0 +1,5 @@
+load_automaton aut1
+load_automaton aut2
+aut3 = (compl aut2)
+aut4 = (inter aut1 aut3)
+is_empty aut4

@@ -19,12 +19,15 @@
 #include <mata/parser/mintermization.hh>
 
 #include "parser.h"
+#include "../utils/util.h"
 
 template<typename NFA>
 struct Instance {
     std::function<NFA(const mata::IntermediateAut&)> mata_to_nfa;
     std::function<NFA(const NFA&, const NFA&)> intersection;
+    std::function<NFA(const std::vector<NFA>)> inter_all;
     std::function<NFA(const NFA&, const NFA&)> uni;
+    std::function<NFA(const NFA&)> complement;
     std::function<bool(const NFA&)> is_empty;
     std::function<bool(const NFA&, const NFA&)> is_included;
 };
@@ -37,6 +40,8 @@ struct Interpreter {
     std::vector<SSA_Call> program {};
     std::map<std::string, NFA> aut_table {};
     std::vector<std::string> arguments;
+    std::vector<std::string> load_all_auts {};
+    std::vector<mata::IntermediateAut> inter_auts {};
 
 
     Interpreter(const Instance<NFA>& inst, const std::vector<std::string>& args) : instance(inst), param_cnt(0), program(), aut_table(), arguments(args) { }
@@ -46,16 +51,28 @@ public:
         this->program = parse_program(filename);
         this->param_cnt = 0;
 
+        // load and minterminize all input automata
+        prepare_intermediate_automata();
+
         for(size_t i = 0; i < this->program.size(); i++) {
             switch(this->program[i].operation) {
             case LOAD_CMD:
-                load_nfa(this->program[i].result.value(), this->arguments[this->param_cnt++]);
+                load_nfa(this->program[i].result.value(), this->param_cnt++);
+                break;
+            case LOAD_ALL: // all automata are already loaded
+                load_all();
                 break;
             case INTERSECTION:
                 intersection(this->program[i].result.value(), this->program[i].params);
                 break;
+            case INTERALL:
+                inter_all(this->program[i].result.value());
+                break;
             case UNION:
                 uni(this->program[i].result.value(), this->program[i].params);
+                break;
+            case COMPLEMENT:
+                complement(this->program[i].result.value(), this->program[i].params);
                 break;
             case EMPTINESS_CHECK:
                 is_empty(this->program[i].params[0]);
@@ -68,7 +85,25 @@ public:
     }
 
 private:
-    void load_nfa(const std::string& name, const std::string& filename) {
+    void prepare_intermediate_automata() {
+        std::vector<mata::IntermediateAut> auts {};
+        bool exists_bv = false;
+        TIME_BEGIN(mataparsing);
+        for(const std::string& fl : this->arguments) {
+            mata::IntermediateAut aut = load_intermediate(fl);
+            exists_bv = exists_bv || aut.alphabet_type == mata::IntermediateAut::AlphabetType::BITVECTOR;
+            auts.push_back(aut);
+        }
+        if(exists_bv) {
+            mata::Mintermization mintermization;
+            this->inter_auts = mintermization.mintermize(auts);
+        } else {
+            this->inter_auts = auts;
+        }
+        TIME_END(mataparsing);
+    }
+
+    mata::IntermediateAut load_intermediate(const std::string& filename) {
         std::fstream fs(filename, std::ios::in);
         if (!fs) {
             throw std::runtime_error("could not open file");
@@ -85,17 +120,27 @@ private:
             throw std::runtime_error("The type of input automaton is not NFA\n");
         }
 
-        std::vector<mata::IntermediateAut> inter_auts = mata::IntermediateAut::parse_from_mf(parsed);
-        mata::IntermediateAut inter_aut;
+        return mata::IntermediateAut::parse_from_mf(parsed)[0];
+    }
 
-        if(inter_aut.alphabet_type == mata::IntermediateAut::AlphabetType::BITVECTOR) {
-            mata::Mintermization mintermization;
-            inter_aut = mintermization.mintermize(inter_auts)[0];
-        } else {
-            inter_aut = inter_auts[0];
+    void load_nfa(const std::string& name, int index) {
+        this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[index]);
+    }
+
+    void load_all() {
+        for(size_t i = 0; i < this->inter_auts.size(); i++) {
+            std::string name = "_aut{}" + std::to_string(i);
+            this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[i]);
+            this->load_all_auts.push_back(name);
         }
+    }
 
-        this->aut_table[name] = this->instance.mata_to_nfa(inter_aut);
+    void inter_all(const std::string& res) {
+        std::vector<NFA> nfas {};
+        for(const std::string& name : this->load_all_auts) {
+            nfas.emplace_back(this->aut_table[name]);
+        }
+        this->aut_table[res] = this->instance.inter_all(nfas);
     }
 
     void intersection(const std::string& res, const std::vector<std::string>& params) {
@@ -114,6 +159,12 @@ private:
             tmp = this->instance.uni(tmp, this->aut_table.at(params[i]));
         }
         this->aut_table[res] = tmp;
+    }
+
+    void complement(const std::string& res, const std::vector<std::string>& params) {
+        assert(params.size() == 1);
+        NFA tmp = this->aut_table.at(params[0]);
+        this->aut_table[res] = this->instance.complement(tmp);
     }
 
     void is_included(const std::string& a1, const std::string& a2) {
