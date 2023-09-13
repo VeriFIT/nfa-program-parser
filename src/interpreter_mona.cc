@@ -10,14 +10,20 @@
 #include <functional>
 #include <stdexcept>
 
+extern "C" {
+#include <mona/bdd.h>
+#include <mona/dfa.h>
+#include <mona/mem.h>
+}
+
 #include <mata/nfa/nfa.hh>
+#include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
-#include <mata/parser/mintermization.hh>
 
 #include "interpreter/parser.h"
 #include "interpreter/interpreter.h"
-
-
+#include "utils/util.h"
+#include "mona_mata.h"
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -36,19 +42,28 @@ int main(int argc, char** argv) {
         automata.push_back(std::string(argv[i]));
     }
 
-    Instance<std::string> dbgInst;
-    dbgInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> std::string {
-        std::cout << "load(aut)" << std::endl;
-        return "aut";
+    Instance<DFA*> monaInst;
+    monaInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> DFA* {
+       DFA* res = mona_input(filename);
+       return res;
     };
-    dbgInst.intersection = [](const std::string& a1, const std::string& a2) -> std::string {
-        std::string res = "intersection (" + a1 + ", " + a2 + ")";
-        std::cout << res << std::endl;
+    monaInst.intersection = [](DFA* a1, DFA* a2) -> DFA* {
+        TIME_BEGIN(intersection);
+        DFA* res = MonaDFA_product(a1, a2, dfaAND);
+        TIME_END(intersection);
         return res;
     };
-    dbgInst.is_empty = [](const std::string& a1) -> bool {
-        std::cout << "is_empty (" + a1 + ")" << std::endl;
-        return true;
+    monaInst.uni = [](DFA* a1, DFA* a2) -> DFA* {
+        TIME_BEGIN(uni);
+        DFA* res = MonaDFA_product(a1, a2, dfaOR);
+        TIME_END(uni);
+        return res;
+    };
+    monaInst.is_empty = [](DFA* a1) -> bool {
+        TIME_BEGIN(emptiness_check);
+        bool empty = MonaDFA_check_empty(a1);
+        TIME_END(emptiness_check);
+        return empty;
     };
 
     std::ifstream input(program);
@@ -58,7 +73,7 @@ int main(int argc, char** argv) {
     }
 
     try {
-        Interpreter<std::string> interpret(dbgInst, automata);
+        Interpreter<DFA*> interpret(monaInst, automata);
         interpret.run_program(input); 
     } catch (const std::exception &exc) {
         std::cerr << "error: " << exc.what();

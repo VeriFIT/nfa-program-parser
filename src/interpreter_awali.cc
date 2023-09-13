@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<automaton_t> awaliInst;
-    awaliInst.mata_to_nfa = [](const mata::IntermediateAut& t) -> automaton_t {
+    awaliInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> automaton_t {
         mata::OnTheFlyAlphabet alphabet;
         mata::nfa::Nfa mata_aut = mata::nfa::builder::construct(t, &alphabet);
         std::map<mata::nfa::State, state_t> state_map {}; 

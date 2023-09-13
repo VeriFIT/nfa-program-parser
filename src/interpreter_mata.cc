@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<mata::nfa::Nfa> mataInst;
-    mataInst.mata_to_nfa = [&alphabets](const mata::IntermediateAut& t) -> mata::nfa::Nfa {
+    mataInst.mata_to_nfa = [&alphabets](const mata::IntermediateAut& t, const std::string& filename) -> mata::nfa::Nfa {
         alphabets.push_back(mata::OnTheFlyAlphabet{});
         mata::OnTheFlyAlphabet& alphabet = alphabets.back(); // TODO: what to do with the alphabet
         TIME_BEGIN(construction);

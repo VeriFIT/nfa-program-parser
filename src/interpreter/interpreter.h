@@ -23,7 +23,7 @@
 
 template<typename NFA>
 struct Instance {
-    std::function<NFA(const mata::IntermediateAut&)> mata_to_nfa;
+    std::function<NFA(const mata::IntermediateAut&, const std::string& filename)> mata_to_nfa;
     std::function<NFA(const NFA&, const NFA&)> intersection;
     std::function<NFA(const std::vector<NFA>)> inter_all;
     std::function<NFA(const NFA&, const NFA&)> uni;
@@ -124,13 +124,13 @@ private:
     }
 
     void load_nfa(const std::string& name, int index) {
-        this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[index]);
+        this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[index], this->arguments[index]);
     }
 
     void load_all() {
         for(size_t i = 0; i < this->inter_auts.size(); i++) {
             std::string name = "_aut{}" + std::to_string(i);
-            this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[i]);
+            this->aut_table[name] = this->instance.mata_to_nfa(this->inter_auts[i], this->arguments[i]);
             this->load_all_auts.push_back(name);
         }
     }

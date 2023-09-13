@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<VATA::ExplicitTreeAut> vataInst;
-    vataInst.mata_to_nfa = [](const mata::IntermediateAut& t) -> VATA::ExplicitTreeAut {
+    vataInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> VATA::ExplicitTreeAut {
         mata::OnTheFlyAlphabet alphabet;
         VATA::Parsing::TimbukParser parser;
 
