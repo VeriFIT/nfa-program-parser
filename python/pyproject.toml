@@ -12,7 +12,8 @@ authors = [
 ]
 dependencies = [
     "libmata>=0.102.0",
-    "automata-lib>=8.0.0"
+    "automata-lib>=8.0.0",
+    "fado>=2.1.2"
 ]
 
 [project.scripts]
