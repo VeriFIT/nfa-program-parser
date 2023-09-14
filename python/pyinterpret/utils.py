@@ -1,3 +1,4 @@
+import sys
 import time
 
 
@@ -17,3 +18,8 @@ def timed(*iarg, **ikwargs):
             return result
         return inner_wrapper
     return wrapper
+
+
+def die(msg):
+    print(msg, file=sys.stderr)
+    sys.exit(1)

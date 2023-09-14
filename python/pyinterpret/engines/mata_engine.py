@@ -25,7 +25,8 @@ class MataEngine(engine_base.Engine):
     def inclusion(self, lhs: Any, rhs: Any) -> Any:
         return libmata.is_included(lhs, rhs)
 
-    def load_db(self, db: dict) -> Any:
+    @timed(timer="conversion")
+    def convert_db(self, db: dict, alphabet) -> Any:
         return db
 
     @timed(timer="intersection")

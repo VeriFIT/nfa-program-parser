@@ -4,11 +4,11 @@ import re
 from enum import Enum
 import pyinterpret.engines.base as engine_base
 from pyinterpret.engines.mata_engine import MataEngine
+from pyinterpret.engines.automatalib_engine import AutomataLibEngine
 from pyinterpret.utils import timed
 
 import libmata.parser as mata_parser
 import libmata.alphabets as alph
-
 
 number_matcher = re.compile("\d+")
 
@@ -20,11 +20,6 @@ class Operation(Enum):
     Emptiness = 4
     Inclusion = 5
     NaryIntersection = 6
-
-
-def die(msg):
-    print(msg, file=sys.stderr)
-    sys.exit(1)
 
 
 def load_program(src):
@@ -57,7 +52,6 @@ def load_program(src):
 
 
 def interpret_program(engine, program, automata_db, alphabet):
-    automata_db = engine.load_db(automata_db)
     for inst in program:
         if inst[0] == Operation.Union:
             automata_db[inst[1]] = engine.union(automata_db[inst[2]], automata_db[inst[3]])
@@ -101,6 +95,9 @@ def launch():
 
     automata_tokens, program = load_program(program_src)
     alphabet, db = load_automata_db(automata_tokens, automata_src)
+    db = engine.convert_db(db, alphabet)
+    if not db:
+        die("automata db was not properly loaded")
     interpret_program(engine, program, db, alphabet)
 
 
