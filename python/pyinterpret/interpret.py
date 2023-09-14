@@ -4,6 +4,7 @@ import re
 from enum import Enum
 import pyinterpret.engines.base as engine_base
 from pyinterpret.engines.mata_engine import MataEngine
+from pyinterpret.utils import timed
 
 import libmata.parser as mata_parser
 import libmata.alphabets as alph
@@ -74,6 +75,7 @@ def interpret_program(engine, program, automata_db, alphabet):
             die(f"unsupported operation {inst[0]}")
 
 
+@timed(timer="construction")
 def load_automata_db(automata_tokens, automata_sources):
     automata_to_load = []
     token_len = len(automata_tokens)
