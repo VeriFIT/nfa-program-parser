@@ -10,4 +10,4 @@ find_library(LIBMONAMEM monamem REQUIRED)
 find_library(LIBMONABDD monabdd REQUIRED)
 
 add_subdirectory(libvata)
-add_subdirectory(src)
+add_subdirectory(src/cpp)
