@@ -4,8 +4,9 @@ import re
 from enum import Enum
 import pyinterpret.engines.base as engine_base
 from pyinterpret.engines.mata_engine import MataEngine
+from pyinterpret.engines.fado_engine import FadoEngine
 from pyinterpret.engines.automatalib_engine import AutomataLibEngine
-from pyinterpret.utils import timed
+from pyinterpret.utils import timed, die
 
 import libmata.parser as mata_parser
 import libmata.alphabets as alph
