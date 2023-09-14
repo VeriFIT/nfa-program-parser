@@ -53,11 +53,37 @@ int main(int argc, char** argv) {
         TIME_END(intersection);
         return res;
     };
+    monaInst.inter_all = [](const std::vector<DFA*>& auts) -> DFA* {
+        assert(auts.size() > 0);
+        std::cout << auts.size() << std::endl;
+        DFA* tmp = auts[0];
+        TIME_BEGIN(interall);
+        for(size_t i = 1; i < auts.size(); i++) {
+            tmp = MonaDFA_product(tmp, auts[i], dfaAND);
+        }
+        TIME_END(interall);
+        return tmp;
+    };
     monaInst.uni = [](DFA* a1, DFA* a2) -> DFA* {
         TIME_BEGIN(uni);
         DFA* res = MonaDFA_product(a1, a2, dfaOR);
         TIME_END(uni);
         return res;
+    };
+    monaInst.complement = [](DFA* a1) -> DFA* {
+        TIME_BEGIN(compl);
+        DFA *aut=dfaCopy(a1);
+		dfaNegation(aut);
+        TIME_END(compl);
+        return aut;
+    };
+    monaInst.is_included = [](DFA* a1, DFA* a2) -> bool {
+        TIME_BEGIN(inclusion_check);
+        DFA *a2_compl=dfaCopy(a2);
+        dfaNegation(a2_compl);
+        bool incl = MonaDFA_check_empty( MonaDFA_product(a1, a2_compl,dfaAND));
+        TIME_END(inclusion_check);
+        return incl;
     };
     monaInst.is_empty = [](DFA* a1) -> bool {
         TIME_BEGIN(emptiness_check);
