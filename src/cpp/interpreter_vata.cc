@@ -55,6 +55,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    std::cout << std::boolalpha; 
+
     std::string program = std::string(argv[1]);
     std::vector<std::string> automata;
     for(size_t i = 2; i < argc; i++) {
@@ -111,6 +113,7 @@ int main(int argc, char** argv) {
         TIME_BEGIN(emptiness_check);
         bool empty = a1.IsLangEmpty();
         TIME_END(emptiness_check);
+        std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
     };
     vataInst.is_included = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> bool {
@@ -120,6 +123,7 @@ int main(int argc, char** argv) {
         TIME_BEGIN(inclusion_check);
         bool incl = VATA::ExplicitTreeAut::CheckInclusion(a1, a2, inclParams);
         TIME_END(inclusion_check);
+        std::cout << "inclusion_check_result: " << incl << std::endl;
         return incl;
     };
 

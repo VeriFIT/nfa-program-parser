@@ -34,6 +34,8 @@ int main(int argc, char** argv) {
         std::cout << "arguments: input.emp [aut.mata]*" << std::endl;
         return 0;
     }
+    
+    std::cout << std::boolalpha; 
 
     std::string program = std::string(argv[1]);
     std::vector<std::string> automata;
@@ -106,6 +108,7 @@ int main(int argc, char** argv) {
         TIME_BEGIN(emptiness_check);
         bool empty = is_empty(trim(a1));
         TIME_END(emptiness_check);
+        std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
     };
     awaliInst.is_included = [](const automaton_t& a1, const automaton_t& a2) -> bool {
@@ -113,6 +116,7 @@ int main(int argc, char** argv) {
         TIME_BEGIN(inclusion_check);
         bool incl = is_empty(trim(product(a1, complement(complete(a2)))));
         TIME_END(inclusion_check);
+        std::cout << "inclusion_check_result: " << incl << std::endl;
         return incl;
     };
 

@@ -94,13 +94,15 @@ private:
             exists_bv = exists_bv || aut.alphabet_type == mata::IntermediateAut::AlphabetType::BITVECTOR;
             auts.push_back(aut);
         }
+        TIME_END(mataparsing);
         if(exists_bv) {
+            TIME_BEGIN(mataminterm);
             mata::Mintermization mintermization;
             this->inter_auts = mintermization.mintermize(auts);
+            TIME_END(mataminterm);
         } else {
             this->inter_auts = auts;
         }
-        TIME_END(mataparsing);
     }
 
     mata::IntermediateAut load_intermediate(const std::string& filename) {
