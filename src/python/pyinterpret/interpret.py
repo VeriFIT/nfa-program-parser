@@ -23,7 +23,7 @@ class Operation(Enum):
     NaryIntersection = 6
 
 
-def load_program(src):
+def load_program(src, automata_src):
     if not os.path.exists(src):
         die(f"error: {src} does not exist")
     with open(src, 'r') as src_handle:
@@ -34,6 +34,9 @@ def load_program(src):
         if 'load_automaton' in inst:
             assert len(inst) == 2
             automata.append(inst[1])
+        elif 'load_automata' in inst:
+            assert len(automata) == 0 and "Unsupported (Either load automata explicitly or call load_automata alone)"
+            automata.extend([f"aut{i}" for i in range(1, len(automata_src)+1)])
         elif 'inter' in inst:
             program.append((Operation.Intersection, inst[0], inst[2], inst[3]))
         elif 'union' in inst:
@@ -94,7 +97,7 @@ def launch():
 
     engine = engine_base.Engine.get_engine(engine_name)
 
-    automata_tokens, program = load_program(program_src)
+    automata_tokens, program = load_program(program_src, automata_src)
     alphabet, db = load_automata_db(automata_tokens, automata_src)
     db = engine.convert_db(db, alphabet)
     if not db:
