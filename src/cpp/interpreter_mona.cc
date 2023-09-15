@@ -17,7 +17,6 @@ extern "C" {
 }
 
 #include <mata/nfa/nfa.hh>
-#include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
 
 #include "interpreter/parser.h"
@@ -45,7 +44,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<DFA*> monaInst;
-    monaInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> DFA* {
+    monaInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> DFA* {
        DFA* res = mona_input(filename);
        return res;
     };

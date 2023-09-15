@@ -17,13 +17,14 @@
 #include <mata/nfa/nfa.hh>
 #include <mata/parser/inter-aut.hh>
 #include <mata/parser/mintermization.hh>
+#include <mata/nfa/builder.hh>
 
 #include "parser.h"
 #include "../utils/util.h"
 
 template<typename NFA>
 struct Instance {
-    std::function<NFA(const mata::IntermediateAut&, const std::string& filename)> mata_to_nfa;
+    std::function<NFA(const mata::nfa::Nfa&, const std::string& filename)> mata_to_nfa;
     std::function<NFA(const NFA&, const NFA&)> intersection;
     std::function<NFA(const std::vector<NFA>)> inter_all;
     std::function<NFA(const NFA&, const NFA&)> uni;
@@ -41,10 +42,10 @@ struct Interpreter {
     std::map<std::string, NFA> aut_table {};
     std::vector<std::string> arguments;
     std::vector<std::string> load_all_auts {};
-    std::vector<mata::IntermediateAut> inter_auts {};
+    std::vector<mata::nfa::Nfa> inter_auts {};
+    mata::OnTheFlyAlphabet alphabet {};
 
-
-    Interpreter(const Instance<NFA>& inst, const std::vector<std::string>& args) : instance(inst), param_cnt(0), program(), aut_table(), arguments(args) { }
+    Interpreter(const Instance<NFA>& inst, const std::vector<std::string>& args) : instance(inst), param_cnt(0), program(), aut_table(), arguments(args), alphabet() { }
 
 public:
     void run_program(std::ifstream& filename) {
@@ -52,7 +53,7 @@ public:
         this->param_cnt = 0;
 
         // load and minterminize all input automata
-        prepare_intermediate_automata();
+        prepare_mata_automata();
 
         for(size_t i = 0; i < this->program.size(); i++) {
             switch(this->program[i].operation) {
@@ -85,7 +86,8 @@ public:
     }
 
 private:
-    void prepare_intermediate_automata() {
+    void prepare_mata_automata() {
+        this->inter_auts.clear();
         std::vector<mata::IntermediateAut> auts {};
         bool exists_bv = false;
         TIME_BEGIN(mataparsing);
@@ -98,10 +100,13 @@ private:
         if(exists_bv) {
             TIME_BEGIN(mataminterm);
             mata::Mintermization mintermization;
-            this->inter_auts = mintermization.mintermize(auts);
+            auts = mintermization.mintermize(auts);
             TIME_END(mataminterm);
-        } else {
-            this->inter_auts = auts;
+        }
+        for(const mata::IntermediateAut& inter_aut : auts) {
+            mata::nfa::Nfa aut_nfa = mata::nfa::builder::construct(inter_aut, &this->alphabet);
+            aut_nfa.alphabet = &this->alphabet;
+            this->inter_auts.emplace_back(aut_nfa);
         }
     }
 

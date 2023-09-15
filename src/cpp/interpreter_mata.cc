@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include <mata/nfa/nfa.hh>
-#include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
 
 #include "interpreter/parser.h"
@@ -42,14 +41,14 @@ int main(int argc, char** argv) {
     }
 
     Instance<mata::nfa::Nfa> mataInst;
-    mataInst.mata_to_nfa = [&alphabets](const mata::IntermediateAut& t, const std::string& filename) -> mata::nfa::Nfa {
-        alphabets.push_back(mata::OnTheFlyAlphabet{});
-        mata::OnTheFlyAlphabet& alphabet = alphabets.back(); // TODO: what to do with the alphabet
-        TIME_BEGIN(construction);
-        mata::nfa::Nfa aut = mata::nfa::builder::construct(t, &alphabet);
-        aut.alphabet = &alphabet;
-        TIME_END(construction);
-        return aut;
+    mataInst.mata_to_nfa = [&alphabets](const mata::nfa::Nfa& t, const std::string& filename) -> mata::nfa::Nfa {
+        // alphabets.push_back(mata::OnTheFlyAlphabet{});
+        // mata::OnTheFlyAlphabet& alphabet = alphabets.back(); // TODO: what to do with the alphabet
+        // TIME_BEGIN(construction);
+        // mata::nfa::Nfa aut = mata::nfa::builder::construct(t, &alphabet);
+        // aut.alphabet = &alphabet;
+        // TIME_END(construction);
+        return t;
     };
     mataInst.intersection = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
         TIME_BEGIN(intersection);

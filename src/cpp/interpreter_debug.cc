@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<std::string> dbgInst;
-    dbgInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> std::string {
+    dbgInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> std::string {
         std::cout << "load(aut)" << std::endl;
         return "aut";
     };

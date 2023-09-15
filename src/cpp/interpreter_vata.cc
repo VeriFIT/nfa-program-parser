@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include <mata/nfa/nfa.hh>
-#include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
 
 #include <vata/explicit_tree_aut.hh>
@@ -64,20 +63,17 @@ int main(int argc, char** argv) {
     }
 
     Instance<VATA::ExplicitTreeAut> vataInst;
-    vataInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> VATA::ExplicitTreeAut {
-        mata::OnTheFlyAlphabet alphabet;
+    vataInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> VATA::ExplicitTreeAut {
         VATA::Parsing::TimbukParser parser;
-
         std::stringstream ss;
         ss << "Ops";
-        for (mata::Symbol s : alphabet.get_alphabet_symbols()) {
+        for (mata::Symbol s : t.alphabet->get_alphabet_symbols()) {
             ss << " a" << s << ":1";
         }
         ss << " x:0" << std::endl << std::endl << "Automaton A" << std::endl;
         
-        mata::nfa::Nfa mata_aut = mata::nfa::builder::construct(t, &alphabet);
         TIME_BEGIN(construction);
-        VATA::ExplicitTreeAut aut = mata_to_vata(mata_aut, ss.str(), parser);
+        VATA::ExplicitTreeAut aut = mata_to_vata(t, ss.str(), parser);
         TIME_END(construction);
         return aut;
     };

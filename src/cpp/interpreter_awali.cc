@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include <mata/nfa/nfa.hh>
-#include <mata/nfa/builder.hh>
 #include <mata/parser/inter-aut.hh>
 
 #include <awali/dyn.hh>
@@ -44,14 +43,10 @@ int main(int argc, char** argv) {
     }
 
     Instance<automaton_t> awaliInst;
-    awaliInst.mata_to_nfa = [](const mata::IntermediateAut& t, const std::string& filename) -> automaton_t {
-        mata::OnTheFlyAlphabet alphabet;
-        mata::nfa::Nfa mata_aut = mata::nfa::builder::construct(t, &alphabet);
+    awaliInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> automaton_t {
         std::map<mata::nfa::State, state_t> state_map {}; 
-
         std::string awali_alphabet;
-        
-        for (mata::Symbol s : alphabet.get_alphabet_symbols()) {
+        for (mata::Symbol s : t.alphabet->get_alphabet_symbols()) {
             if(s > 255) {
                 throw std::out_of_range("awali symbol out of range");
             }
@@ -60,17 +55,17 @@ int main(int argc, char** argv) {
         automaton_t awali_aut = automaton_t::from(awali_alphabet);
         
         TIME_BEGIN(construction);
-        for (mata::nfa::State s = 0; s < mata_aut.size(); ++s) {
+        for (mata::nfa::State s = 0; s < t.size(); ++s) {
             state_t new_state = awali_aut->add_state();
             state_map[s] = new_state;
         }
-        for (const auto &tran : mata_aut.delta.transitions()) {
+        for (const auto &tran : t.delta.transitions()) {
             awali_aut->add_transition(state_map.at(tran.source), state_map.at(tran.target), char(tran.symbol));
         }
-        for (mata::nfa::State s : mata_aut.final) {
+        for (mata::nfa::State s : t.final) {
             awali_aut->set_final(state_map.at(s));
         }
-        for (mata::nfa::State s : mata_aut.initial) {
+        for (mata::nfa::State s : t.initial) {
             awali_aut->set_initial(state_map.at(s));
         }
         TIME_END(construction);
