@@ -36,6 +36,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    std::cout << std::boolalpha; 
+
     std::string program = std::string(argv[1]);
     std::vector<std::string> automata;
     for(size_t i = 2; i < argc; i++) {
@@ -83,12 +85,14 @@ int main(int argc, char** argv) {
         dfaNegation(a2_compl);
         bool incl = MonaDFA_check_empty( MonaDFA_product(a1, a2_compl,dfaAND));
         TIME_END(inclusion_check);
+        std::cout << "inclusion_check_result: " << incl << std::endl;
         return incl;
     };
     monaInst.is_empty = [](DFA* a1) -> bool {
         TIME_BEGIN(emptiness_check);
         bool empty = MonaDFA_check_empty(a1);
         TIME_END(emptiness_check);
+        std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
     };
 
