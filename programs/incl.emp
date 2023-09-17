@@ -1,0 +1,3 @@
+load_automaton aut1
+load_automaton aut2
+incl aut1 aut2

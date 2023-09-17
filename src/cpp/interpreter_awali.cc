@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     };
     awaliInst.complement = [](const automaton_t& a1) -> automaton_t {
         TIME_BEGIN(compl);
-        automaton_t aut = complement(complete(a1));
+        automaton_t aut = complement(complete(determinize(a1)));
         TIME_END(compl);
         return aut;
     };
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
     awaliInst.is_included = [](const automaton_t& a1, const automaton_t& a2) -> bool {
         // TODO: it seems that awali does not support inclusion checking (just equivalence checking)
         TIME_BEGIN(inclusion_check);
-        bool incl = is_empty(trim(product(a1, complement(complete(a2)))));
+        bool incl = is_empty(trim(product(a1, complement(complete(determinize(a2))))));
         TIME_END(inclusion_check);
         std::cout << "inclusion_check_result: " << incl << std::endl;
         return incl;
