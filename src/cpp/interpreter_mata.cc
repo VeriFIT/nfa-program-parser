@@ -42,12 +42,6 @@ int main(int argc, char** argv) {
 
     Instance<mata::nfa::Nfa> mataInst;
     mataInst.mata_to_nfa = [&alphabets](const mata::nfa::Nfa& t, const std::string& filename) -> mata::nfa::Nfa {
-        // alphabets.push_back(mata::OnTheFlyAlphabet{});
-        // mata::OnTheFlyAlphabet& alphabet = alphabets.back(); // TODO: what to do with the alphabet
-        // TIME_BEGIN(construction);
-        // mata::nfa::Nfa aut = mata::nfa::builder::construct(t, &alphabet);
-        // aut.alphabet = &alphabet;
-        // TIME_END(construction);
         return t;
     };
     mataInst.intersection = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
@@ -77,6 +71,7 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa aut = mata::nfa::complement(a1, *a1.alphabet, 
             {{"algorithm", "classical"}, {"minimize", "false"}});
         TIME_END(compl);
+        aut.alphabet = a1.alphabet;
         return aut;
     };
     mataInst.is_empty = [](const mata::nfa::Nfa& a1) -> bool {

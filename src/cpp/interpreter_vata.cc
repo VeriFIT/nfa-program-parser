@@ -28,15 +28,15 @@ VATA::ExplicitTreeAut mata_to_vata(const mata::nfa::Nfa &nfa, const std::string 
         ss << " q" << s;
     }
     ss << std::endl << "Final States";
-    for (mata::nfa::State s : nfa.final) {
+    for (mata::nfa::State s : nfa.initial) {
         ss << " q" << s;
     }
     ss << std::endl << "Transitions" << std::endl;
-    for (mata::nfa::State s : nfa.initial) {
+    for (mata::nfa::State s : nfa.final) {
         ss << "x -> q" << s << std::endl;
     }
     for (const auto &tran : nfa.delta.transitions()) {
-        ss << "a" << tran.symbol << "(q" << tran.source << ") -> q" << tran.target << std::endl;
+        ss << "a" << tran.symbol << "(q" << tran.target << ") -> q" << tran.source << std::endl;
     }
     VATA::ExplicitTreeAut result;
     result.LoadFromString(parser, ss.str());
