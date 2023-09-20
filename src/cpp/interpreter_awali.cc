@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
         automaton_t awali_aut = automaton_t::from(awali_alphabet);
         
         TIME_BEGIN(construction);
-        for (mata::nfa::State s = 0; s < t.size(); ++s) {
+        for (mata::nfa::State s = 0; s < t.num_of_states(); ++s) {
             state_t new_state = awali_aut->add_state();
             state_map[s] = new_state;
         }

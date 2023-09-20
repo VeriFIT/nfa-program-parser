@@ -24,7 +24,7 @@ VATA::ExplicitTreeAut mata_to_vata(const mata::nfa::Nfa &nfa, const std::string 
     std::stringstream ss;
     ss << header;
     ss << "States";
-    for (mata::nfa::State s = 0; s < nfa.size(); ++s) {
+    for (mata::nfa::State s = 0; s < nfa.num_of_states(); ++s) {
         ss << " q" << s;
     }
     ss << std::endl << "Final States";

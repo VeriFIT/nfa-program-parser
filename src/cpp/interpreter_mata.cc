@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
     };
     mataInst.is_empty = [](const mata::nfa::Nfa& a1) -> bool {
         TIME_BEGIN(emptiness_check);
-        bool empty = mata::nfa::is_lang_empty(a1);
+        bool empty = a1.is_lang_empty();
         TIME_END(emptiness_check);
         std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
