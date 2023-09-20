@@ -58,19 +58,19 @@ def load_program(src, automata_src):
 def interpret_program(engine, program, automata_db, alphabet):
     for inst in program:
         if inst[0] == Operation.Union:
-            automata_db[inst[1]] = engine.union(automata_db[inst[2]], automata_db[inst[3]])
+            automata_db[inst[1]] = engine.trim(engine.union(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Intersection:
-            automata_db[inst[1]] = engine.intersection(automata_db[inst[2]], automata_db[inst[3]])
+            automata_db[inst[1]] = engine.trim(engine.intersection(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Complement:
-            automata_db[inst[1]] = engine.complement(automata_db[inst[2]], alphabet)
+            automata_db[inst[1]] = engine.trim(engine.complement(automata_db[inst[2]], alphabet))
+        elif inst[0] == Operation.NaryIntersection:
+            automata_db[inst[1]] = engine.trim(engine.intersection_all(list(automata_db.values())))
         elif inst[0] == Operation.Inclusion:
             result = engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
             print(f"result: {result}")
         elif inst[0] == Operation.Emptiness:
             result = engine.is_empty(automata_db[inst[1]])
             print(f"result: {result}")
-        elif inst[0] == Operation.NaryIntersection:
-            automata_db[inst[1]] = engine.intersection_all(list(automata_db.values()))
         else:
             die(f"unsupported operation {inst[0]}")
 

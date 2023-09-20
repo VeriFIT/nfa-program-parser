@@ -16,6 +16,10 @@ def parse_targets(aut, state):
 
 
 class AutomataLibEngine(engine_base.Engine):
+    @timed(timer="trimming")
+    def trim(self, lhs: Any):
+        return lhs
+
     @timed(timer="conversion")
     def convert_db(self, db: dict, alphabet) -> Any:
         for token, aut in db.items():

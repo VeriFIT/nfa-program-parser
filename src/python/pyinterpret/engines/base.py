@@ -19,6 +19,10 @@ class Engine(abc.ABC, metaclass=EngineMeta):
     automata_db: dict
 
     @abc.abstractmethod
+    def trim(self, lhs: Any):
+        pass
+
+    @abc.abstractmethod
     def convert_db(self, db: dict, alphabet) -> Any:
         """Processes loaded db into supported format
 
