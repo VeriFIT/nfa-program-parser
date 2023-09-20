@@ -6,6 +6,10 @@ from pyinterpret.utils import timed
 
 
 class MataEngine(engine_base.Engine):
+    @timed(timer="trimming")
+    def trim(self, lhs: libmata.Nfa):
+        return lhs.trim()
+
     @timed(timer="union")
     def union(self, lhs: Any, rhs: Any) -> Any:
         return libmata.union(lhs, rhs)
