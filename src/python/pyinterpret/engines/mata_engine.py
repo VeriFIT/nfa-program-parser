@@ -39,5 +39,5 @@ class MataEngine(engine_base.Engine):
 
     @timed(timer="emptiness")
     def is_empty(self, aut: Any) -> bool:
-        return libmata.is_lang_empty(aut)
+        return aut.is_lang_empty()
 
