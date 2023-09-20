@@ -48,22 +48,34 @@ int main(int argc, char** argv) {
         TIME_BEGIN(intersection);
         mata::nfa::Nfa aut = mata::nfa::intersection(a1, a2);
         TIME_END(intersection);
+        TIME_BEGIN(trim);
+        aut.trim();
+        TIME_END(trim);
+        aut.alphabet = a1.alphabet;
         return aut;
     };
     mataInst.inter_all = [](const std::vector<mata::nfa::Nfa>& auts) -> mata::nfa::Nfa {
         assert(auts.size() > 0);
         mata::nfa::Nfa tmp = auts[0];
-        TIME_BEGIN(interall);
         for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(intersection);
             tmp = mata::nfa::intersection(tmp, auts[i]);
+            TIME_END(intersection);
+            TIME_BEGIN(trim);
+            tmp.trim();
+            TIME_END(trim);
         }
-        TIME_END(interall);
+        tmp.alphabet = auts[0].alphabet;
         return tmp;
     };
     mataInst.uni = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
         TIME_BEGIN(uni);
         mata::nfa::Nfa aut = mata::nfa::uni(a1, a2);
         TIME_END(uni);
+        aut.alphabet = a1.alphabet;
+        TIME_BEGIN(trim);
+        aut.trim();
+        TIME_END(trim);
         return aut;
     };
     mataInst.complement = [](const mata::nfa::Nfa& a1) -> mata::nfa::Nfa {
@@ -72,6 +84,9 @@ int main(int argc, char** argv) {
             {{"algorithm", "classical"}, {"minimize", "false"}});
         TIME_END(compl);
         aut.alphabet = a1.alphabet;
+        TIME_BEGIN(trim);
+        aut.trim();
+        TIME_END(trim);
         return aut;
     };
     mataInst.is_empty = [](const mata::nfa::Nfa& a1) -> bool {

@@ -81,28 +81,40 @@ int main(int argc, char** argv) {
         TIME_BEGIN(intersection);
         VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Intersection(a1, a2);
         TIME_END(intersection);
+        TIME_BEGIN(trim);
+        aut = aut.RemoveUselessStates();
+        TIME_END(trim);
         return aut;
     };
     vataInst.inter_all = [](const std::vector<VATA::ExplicitTreeAut>& auts) -> VATA::ExplicitTreeAut {
         assert(auts.size() > 0);
         VATA::ExplicitTreeAut tmp = auts[0];
-        TIME_BEGIN(interall);
         for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(intersection);
             tmp = VATA::ExplicitTreeAut::Intersection(tmp, auts[i]);
+            TIME_END(intersection);
+            TIME_BEGIN(trim);
+            tmp = tmp.RemoveUselessStates();
+            TIME_END(trim);
         }
-        TIME_END(interall);
         return tmp;
     };
     vataInst.uni = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
         TIME_BEGIN(uni);
         VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Union(a1, a2);
         TIME_END(uni);
+        TIME_BEGIN(trim);
+        aut = aut.RemoveUselessStates();
+        TIME_END(trim);
         return aut;
     };
     vataInst.complement = [](const VATA::ExplicitTreeAut& a1) -> VATA::ExplicitTreeAut {
         TIME_BEGIN(compl);
         VATA::ExplicitTreeAut aut = a1.Complement();
         TIME_END(compl);
+        TIME_BEGIN(trim);
+        aut = aut.RemoveUselessStates();
+        TIME_END(trim);
         return aut;
     };
     vataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {

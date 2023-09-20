@@ -75,28 +75,40 @@ int main(int argc, char** argv) {
         TIME_BEGIN(intersection);
         automaton_t res = product(a1, a2);
         TIME_END(intersection);
+        TIME_BEGIN(trim);
+        res = trim(res);
+        TIME_END(trim);
         return res;
     };
     awaliInst.inter_all = [](const std::vector<automaton_t>& auts) -> automaton_t {
         assert(auts.size() > 0);
-        automaton_t tmp = auts[0];
-        TIME_BEGIN(interall);
+        automaton_t tmp = auts[0]; 
         for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(intersection);
             tmp = product(tmp, auts[i]);
+            TIME_END(intersection);
+            TIME_BEGIN(trim);
+            tmp = trim(tmp);
+            TIME_END(trim);
         }
-        TIME_END(interall);
         return tmp;
     };
     awaliInst.uni = [](const automaton_t& a1, const automaton_t& a2) -> automaton_t {
         TIME_BEGIN(uni);
         automaton_t res = sum(a1, a2);
         TIME_END(uni);
+        TIME_BEGIN(trim);
+        res = trim(res);
+        TIME_END(trim);
         return res;
     };
     awaliInst.complement = [](const automaton_t& a1) -> automaton_t {
         TIME_BEGIN(compl);
         automaton_t aut = complement(complete(determinize(a1)));
         TIME_END(compl);
+        TIME_BEGIN(trim);
+        aut = trim(aut);
+        TIME_END(trim);
         return aut;
     };
     awaliInst.is_empty = [](const automaton_t& a1) -> bool {
