@@ -64,9 +64,11 @@ def interpret_program(engine, program, automata_db, alphabet):
         elif inst[0] == Operation.Complement:
             automata_db[inst[1]] = engine.complement(automata_db[inst[2]], alphabet)
         elif inst[0] == Operation.Inclusion:
-            engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
+            result = engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
+            print(f"result: {result}")
         elif inst[0] == Operation.Emptiness:
-            engine.is_empty(automata_db[inst[1]])
+            result = engine.is_empty(automata_db[inst[1]])
+            print(f"result: {result}")
         elif inst[0] == Operation.NaryIntersection:
             automata_db[inst[1]] = engine.intersection_all(list(automata_db.values()))
         else:
