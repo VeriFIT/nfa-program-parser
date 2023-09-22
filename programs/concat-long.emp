@@ -1,0 +1,13 @@
+load_automaton aut1
+load_automaton aut2
+aut3 = (concat aut1 aut2)
+aut4 = (concat aut3 aut3)
+aut5 = (concat aut4 aut4)
+aut6 = (concat aut5 aut5)
+aut7 = (concat aut6 aut6)
+aut8 = (concat aut7 aut7)
+aut9 = (concat aut8 aut8)
+aut10 = (concat aut9 aut9)
+aut11 = (concat aut10 aut10)
+aut12 = (concat aut11 aut11)
+is_empty aut12
