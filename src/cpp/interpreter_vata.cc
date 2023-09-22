@@ -108,6 +108,9 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return aut;
     };
+    vataInst.uni = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
+        throw std::runtime_error("concat is not implemented");
+    };
     vataInst.complement = [](const VATA::ExplicitTreeAut& a1) -> VATA::ExplicitTreeAut {
         TIME_BEGIN(compl);
         VATA::ExplicitTreeAut aut = a1.Complement();

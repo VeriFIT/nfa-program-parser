@@ -20,6 +20,7 @@ enum OPERATION {
     INTERALL,
     UNION,
     COMPLEMENT,
+    CONCAT,
     DETERMINIZATION,
     EMPTINESS_CHECK,
     INCLUSION_CHECK,
@@ -34,6 +35,7 @@ const std::map<std::string, OPERATION> STR_OP = {
     {"inter", INTERSECTION},
     {"union", UNION},
     {"compl", COMPLEMENT},
+    {"concat", CONCAT},
     {"interall", INTERALL},
 
     {"is_empty", EMPTINESS_CHECK},

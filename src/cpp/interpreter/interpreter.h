@@ -29,6 +29,7 @@ struct Instance {
     std::function<NFA(const std::vector<NFA>)> inter_all;
     std::function<NFA(const NFA&, const NFA&)> uni;
     std::function<NFA(const NFA&)> complement;
+    std::function<NFA(const NFA&, const NFA&)> concat;
     std::function<bool(const NFA&)> is_empty;
     std::function<bool(const NFA&, const NFA&)> is_included;
 };
@@ -74,6 +75,9 @@ public:
                 break;
             case COMPLEMENT:
                 complement(this->program[i].result.value(), this->program[i].params);
+                break;
+            case CONCAT:
+                concat(this->program[i].result.value(), this->program[i].params);
                 break;
             case EMPTINESS_CHECK:
                 is_empty(this->program[i].params[0]);
@@ -164,6 +168,15 @@ private:
         NFA tmp = this->aut_table.at(params[0]);
         for(size_t i = 1; i < params.size(); i++) {
             tmp = this->instance.uni(tmp, this->aut_table.at(params[i]));
+        }
+        this->aut_table[res] = tmp;
+    }
+
+    void concat(const std::string& res, const std::vector<std::string>& params) {
+        assert(params.size() > 0);
+        NFA tmp = this->aut_table.at(params[0]);
+        for(size_t i = 1; i < params.size(); i++) {
+            tmp = this->instance.concat(tmp, this->aut_table.at(params[i]));
         }
         this->aut_table[res] = tmp;
     }

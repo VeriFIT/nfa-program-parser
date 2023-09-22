@@ -10,14 +10,14 @@
 #include <functional>
 #include <stdexcept>
 
+#include <mata/nfa/nfa.hh>
+#include <mata/parser/inter-aut.hh>
+
 extern "C" {
 #include <mona/bdd.h>
 #include <mona/dfa.h>
 #include <mona/mem.h>
 }
-
-#include <mata/nfa/nfa.hh>
-#include <mata/parser/inter-aut.hh>
 
 #include "interpreter/parser.h"
 #include "interpreter/interpreter.h"
@@ -70,6 +70,10 @@ int main(int argc, char** argv) {
         DFA* res = MonaDFA_product(a1, a2, dfaOR);
         TIME_END(uni);
         return res;
+    };
+    monaInst.concat = [](DFA* a1, DFA* a2) -> DFA* {
+        throw std::runtime_error("concat is not implemented");
+        return a1;
     };
     monaInst.complement = [](DFA* a1) -> DFA* {
         TIME_BEGIN(compl);

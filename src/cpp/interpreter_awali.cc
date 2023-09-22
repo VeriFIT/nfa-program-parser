@@ -102,6 +102,17 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return res;
     };
+    awaliInst.concat = [](const automaton_t& a1, const automaton_t& a2) -> automaton_t {
+        TIME_BEGIN(concat);
+        automaton_t a1prime = standard(a1);
+        automaton_t a2prime = standard(a2);
+        automaton_t res = concatenate(a1prime, a2prime);
+        TIME_END(concat);
+        TIME_BEGIN(trim);
+        res = trim(res);
+        TIME_END(trim);
+        return res;
+    };
     awaliInst.complement = [](const automaton_t& a1) -> automaton_t {
         TIME_BEGIN(compl);
         automaton_t aut = complement(complete(determinize(a1)));

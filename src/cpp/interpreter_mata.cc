@@ -78,6 +78,17 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return aut;
     };
+    mataInst.concat = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
+        mata::nfa::Nfa aut = a1;
+        TIME_BEGIN(concat);
+        aut.concatenate(a2);
+        TIME_END(concat);
+        aut.alphabet = a1.alphabet;
+        TIME_BEGIN(trim);
+        aut.trim();
+        TIME_END(trim);
+        return aut;
+    };
     mataInst.complement = [](const mata::nfa::Nfa& a1) -> mata::nfa::Nfa {
         TIME_BEGIN(compl);
         mata::nfa::Nfa aut = mata::nfa::complement(a1, *a1.alphabet, 
