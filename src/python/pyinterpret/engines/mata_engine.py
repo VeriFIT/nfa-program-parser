@@ -14,6 +14,10 @@ class MataEngine(engine_base.Engine):
     def union(self, lhs: Any, rhs: Any) -> Any:
         return libmata.union(lhs, rhs)
 
+    @timed(timer="concat")
+    def concat(self, lhs: libmata.Nfa, rhs: libmata.Nfa) -> libmata.Nfa:
+        return libmata.concatenate(lhs, rhs)
+
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list) -> Any:
         result = aut_list[0]

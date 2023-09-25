@@ -55,6 +55,17 @@ class Engine(abc.ABC, metaclass=EngineMeta):
         """
         pass
 
+    @abc.abstractmethod
+    def concat(self, lhs: Any, rhs: Any) -> Any:
+        """Implementation of `aut3 = (concat  aut1 aut2)` instruction
+
+        Makes concatentation of aut1 and aut2 creating automaton in process
+
+        :param lhs: left-hand side of concat
+        :param rhs: right-hand side of concat
+        :return: concat of two automata
+        """
+        pass
 
     @abc.abstractmethod
     def intersection_all(self, aut_list: list) -> Any:
