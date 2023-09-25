@@ -21,6 +21,7 @@ class Operation(Enum):
     Emptiness = 4
     Inclusion = 5
     NaryIntersection = 6
+    Concatenation = 7
 
 
 def load_program(src, automata_src):
@@ -41,6 +42,8 @@ def load_program(src, automata_src):
             program.append((Operation.Intersection, inst[0], inst[2], inst[3]))
         elif 'union' in inst:
             program.append((Operation.Union, inst[0], inst[2], inst[3]))
+        elif 'concat' in inst:
+            program.append((Operation.Concatenation, inst[0], inst[2], inst[3]))
         elif 'compl' in inst:
             program.append((Operation.Complement, inst[0], inst[2]))
         elif 'is_empty' in inst:
@@ -61,6 +64,8 @@ def interpret_program(engine, program, automata_db, alphabet):
             automata_db[inst[1]] = engine.trim(engine.union(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Intersection:
             automata_db[inst[1]] = engine.trim(engine.intersection(automata_db[inst[2]], automata_db[inst[3]]))
+        elif inst[0] == Operation.Concatenation:
+            automata_db[inst[1]] = engine.trim(engine.concat(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Complement:
             automata_db[inst[1]] = engine.trim(engine.complement(automata_db[inst[2]], alphabet))
         elif inst[0] == Operation.NaryIntersection:

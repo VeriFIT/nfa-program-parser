@@ -56,6 +56,10 @@ class AutomataLibEngine(engine_base.Engine):
     def union(self, lhs: dfa.DFA, rhs: dfa.DFA) -> Any:
         return lhs.union(rhs, minify=False)
 
+    @timed(timer="concat")
+    def concat(self, lhs: dfa.DFA, rhs: dfa.DFA) -> dfa.DFA:
+        assert False
+
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list) -> Any:
         result = aut_list[0]

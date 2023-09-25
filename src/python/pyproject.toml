@@ -11,7 +11,7 @@ authors = [
     {name = "Tomas Fiedor", email = "TomasFiedor@gmail.com"}
 ]
 dependencies = [
-    "libmata>=0.102.0",
+    "libmata==0.105.0",
     "automata-lib>=8.0.0",
     "fado>=2.1.2"
 ]
