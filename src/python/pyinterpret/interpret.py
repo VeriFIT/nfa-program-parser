@@ -62,7 +62,7 @@ def interpret_program(engine, program, automata_db, alphabet):
     for inst in program:
         if inst[0] == Operation.Union:
             assert len(inst[2]) == 2 and "Only binary union is currently supported"
-            automata_db[inst[1]] = engine.trim(engine.union(automata_db[inst[2]], automata_db[inst[3]]))
+            automata_db[inst[1]] = engine.trim(engine.union(automata_db[inst[2][0]], automata_db[inst[2][1]]))
         elif inst[0] == Operation.Intersection:
             if len(inst[2]) == 2:
                 automata_db[inst[1]] = engine.trim(engine.intersection(automata_db[inst[2][0]], automata_db[inst[2][1]]))
@@ -72,7 +72,7 @@ def interpret_program(engine, program, automata_db, alphabet):
                 ]))
         elif inst[0] == Operation.Concatenation:
             assert len(inst[2]) == 2 and "Only binary concatenation is currently supported"
-            automata_db[inst[1]] = engine.trim(engine.concat(automata_db[inst[2]], automata_db[inst[3]]))
+            automata_db[inst[1]] = engine.trim(engine.concat(automata_db[inst[2][0]], automata_db[inst[2][1]]))
         elif inst[0] == Operation.Complement:
             automata_db[inst[1]] = engine.trim(engine.complement(automata_db[inst[2]], alphabet))
         elif inst[0] == Operation.NaryIntersection:
