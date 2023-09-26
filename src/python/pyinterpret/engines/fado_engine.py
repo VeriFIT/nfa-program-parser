@@ -16,7 +16,7 @@ class FadoEngine(engine_base.Engine):
             for init in aut.initial_states:
                 nfa.addInitial(nfa.stateIndex(init, True))
             for fin in aut.final_states:
-                nfa.addInitial(nfa.stateIndex(fin, True))
+                nfa.addFinal(nfa.stateIndex(fin, True))
             for trans in aut.iterate():
                 nfa.addTransition(
                     nfa.stateIndex(trans.source, True),
