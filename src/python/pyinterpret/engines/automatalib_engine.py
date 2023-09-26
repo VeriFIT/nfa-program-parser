@@ -15,6 +15,18 @@ def parse_targets(aut, state):
     return targets
 
 
+def parse_states_and_trans(aut):
+    transitions = {}
+    states = set()
+    for trans in aut.iterate():
+        if trans.source not in transitions.keys():
+            transitions[trans.source] = defaultdict(list)
+        states.add(trans.source)
+        states.add(trans.target)
+        transitions[trans.source][trans.symbol].append(trans.target)
+    return states, transitions
+
+
 class AutomataLibEngine(engine_base.Engine):
     def trim(self, lhs: Any):
         return lhs
@@ -22,8 +34,9 @@ class AutomataLibEngine(engine_base.Engine):
     @timed(timer="conversion")
     def convert_db(self, db: dict, alphabet) -> Any:
         for token, aut in db.items():
+            aut.unify_initial()
             aut_initial_states = aut.initial_states
-            aut_states = aut.get_useful_states()
+            aut_states, transitions = parse_states_and_trans(aut)
             if len(aut_initial_states) != 1:
                 die(f"multiple initial states got ({len(aut_initial_states)}")
 
@@ -31,9 +44,9 @@ class AutomataLibEngine(engine_base.Engine):
             input_symbols = {f"{s}" for s in alphabet.get_alphabet_symbols()}
             transitions = {
                 f"q{state}": {
-                    f"{symbol}": {f"q{t}" for t in targets} for (symbol, targets) in parse_targets(aut, state).items()
+                    f"{symbol}": {f"q{t}" for t in targets} for (symbol, targets) in transitions[state].items()
                 }
-                for state in aut_states
+                for state in aut_states if state in transitions.keys()
             }
             initial_state = f"q{aut_initial_states[0]}"
             final_states = {f"q{f}" for f in aut.final_states}
@@ -44,7 +57,7 @@ class AutomataLibEngine(engine_base.Engine):
                 initial_state=initial_state,
                 final_states=final_states
             )
-            db[token] = dfa.DFA.from_nfa(nfa_aut)
+            db[token] = dfa.DFA.from_nfa(nfa_aut, minify=False)
         return db
 
     @timed(timer="intersection")
