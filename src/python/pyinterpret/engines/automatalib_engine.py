@@ -16,7 +16,6 @@ def parse_targets(aut, state):
 
 
 class AutomataLibEngine(engine_base.Engine):
-    @timed(timer="trimming")
     def trim(self, lhs: Any):
         return lhs
 
@@ -64,7 +63,7 @@ class AutomataLibEngine(engine_base.Engine):
     def intersection_all(self, aut_list: list) -> Any:
         result = aut_list[0]
         for aut in aut_list[1:]:
-            result = result.intersection(aut)
+            result = result.intersection(aut, minify=False)
         return result
 
     @timed(timer="complement")

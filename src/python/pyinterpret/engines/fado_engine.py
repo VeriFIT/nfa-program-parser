@@ -6,7 +6,6 @@ import FAdo.fa as fa
 
 
 class FadoEngine(engine_base.Engine):
-    @timed(timer="trimming")
     def trim(self, lhs: Any):
         return lhs
 
@@ -38,7 +37,6 @@ class FadoEngine(engine_base.Engine):
     @timed(timer="concat")
     def concat(self, lhs: fa.DFA, rhs: fa.DFA) -> fa.DFA:
         return lhs.concat(rhs)
-
 
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list[fa.DFA]) -> Any:
