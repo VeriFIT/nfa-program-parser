@@ -6,7 +6,6 @@ import FAdo.fa as fa
 
 
 class FadoEngine(engine_base.Engine):
-    @timed(timer="trimming")
     def trim(self, lhs: Any):
         return lhs
 
@@ -17,7 +16,7 @@ class FadoEngine(engine_base.Engine):
             for init in aut.initial_states:
                 nfa.addInitial(nfa.stateIndex(init, True))
             for fin in aut.final_states:
-                nfa.addInitial(nfa.stateIndex(fin, True))
+                nfa.addFinal(nfa.stateIndex(fin, True))
             for trans in aut.iterate():
                 nfa.addTransition(
                     nfa.stateIndex(trans.source, True),
@@ -38,7 +37,6 @@ class FadoEngine(engine_base.Engine):
     @timed(timer="concat")
     def concat(self, lhs: fa.DFA, rhs: fa.DFA) -> fa.DFA:
         return lhs.concat(rhs)
-
 
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list[fa.DFA]) -> Any:

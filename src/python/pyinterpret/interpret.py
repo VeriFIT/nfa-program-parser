@@ -39,11 +39,11 @@ def load_program(src, automata_src):
             assert len(automata) == 0 and "Unsupported (Either load automata explicitly or call load_automata alone)"
             automata.extend([f"aut{i}" for i in range(1, len(automata_src)+1)])
         elif 'inter' in inst:
-            program.append((Operation.Intersection, inst[0], inst[2], inst[3]))
+            program.append((Operation.Intersection, inst[0], inst[2:]))
         elif 'union' in inst:
-            program.append((Operation.Union, inst[0], inst[2], inst[3]))
+            program.append((Operation.Union, inst[0], inst[2:]))
         elif 'concat' in inst:
-            program.append((Operation.Concatenation, inst[0], inst[2], inst[3]))
+            program.append((Operation.Concatenation, inst[0], inst[2:]))
         elif 'compl' in inst:
             program.append((Operation.Complement, inst[0], inst[2]))
         elif 'is_empty' in inst:
@@ -61,10 +61,17 @@ def load_program(src, automata_src):
 def interpret_program(engine, program, automata_db, alphabet):
     for inst in program:
         if inst[0] == Operation.Union:
+            assert len(inst[2]) == 2 and "Only binary union is currently supported"
             automata_db[inst[1]] = engine.trim(engine.union(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Intersection:
-            automata_db[inst[1]] = engine.trim(engine.intersection(automata_db[inst[2]], automata_db[inst[3]]))
+            if len(inst[2]) == 2:
+                automata_db[inst[1]] = engine.trim(engine.intersection(automata_db[inst[2][0]], automata_db[inst[2][1]]))
+            else:
+                automata_db[inst[1]] = engine.trim(engine.intersection_all([
+                    automata_db[aut] for aut in inst[2]
+                ]))
         elif inst[0] == Operation.Concatenation:
+            assert len(inst[2]) == 2 and "Only binary concatenation is currently supported"
             automata_db[inst[1]] = engine.trim(engine.concat(automata_db[inst[2]], automata_db[inst[3]]))
         elif inst[0] == Operation.Complement:
             automata_db[inst[1]] = engine.trim(engine.complement(automata_db[inst[2]], alphabet))
