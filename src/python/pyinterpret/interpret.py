@@ -22,6 +22,7 @@ class Operation(Enum):
     Inclusion = 5
     NaryIntersection = 6
     Concatenation = 7
+    NaryUnion = 8
 
 
 def load_program(src, automata_src):
@@ -38,6 +39,10 @@ def load_program(src, automata_src):
         elif 'load_automata' in inst:
             assert len(automata) == 0 and "Unsupported (Either load automata explicitly or call load_automata alone)"
             automata.extend([f"aut{i}" for i in range(1, len(automata_src)+1)])
+        elif 'unionall' in inst:
+            program.append((Operation.NaryUnion, inst[0]))
+        elif 'interall' in inst:
+            program.append((Operation.NaryIntersection, inst[0]))
         elif 'inter' in inst:
             program.append((Operation.Intersection, inst[0], inst[2:]))
         elif 'union' in inst:
@@ -50,8 +55,6 @@ def load_program(src, automata_src):
             program.append((Operation.Emptiness, inst[1]))
         elif 'incl' in inst:
             program.append((Operation.Inclusion, inst[1], inst[2]))
-        elif 'interall' in inst:
-            program.append((Operation.NaryIntersection, inst[0]))
         else:
             die(f"{' '.join(inst)} is not supported")
 
@@ -77,6 +80,8 @@ def interpret_program(engine, program, automata_db, alphabet):
             automata_db[inst[1]] = engine.trim(engine.complement(automata_db[inst[2]], alphabet))
         elif inst[0] == Operation.NaryIntersection:
             automata_db[inst[1]] = engine.trim(engine.intersection_all(list(automata_db.values())))
+        elif inst[0] == Operation.NaryUnion:
+            automata_db[inst[1]] = engine.trim(engine.union_all(list(automata_db.values())))
         elif inst[0] == Operation.Inclusion:
             result = engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
             print(f"result: {result}")
