@@ -56,13 +56,12 @@ int main(int argc, char** argv) {
     };
     monaInst.inter_all = [](const std::vector<DFA*>& auts) -> DFA* {
         assert(auts.size() > 0);
-        std::cout << auts.size() << std::endl;
         DFA* tmp = auts[0];
-        TIME_BEGIN(interall);
         for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(intersection);
             tmp = MonaDFA_product(tmp, auts[i], dfaAND);
+            TIME_END(intersection);
         }
-        TIME_END(interall);
         return tmp;
     };
     monaInst.uni = [](DFA* a1, DFA* a2) -> DFA* {
@@ -70,6 +69,16 @@ int main(int argc, char** argv) {
         DFA* res = MonaDFA_product(a1, a2, dfaOR);
         TIME_END(uni);
         return res;
+    };
+    monaInst.uni_all = [](const std::vector<DFA*>& auts) -> DFA* {
+        assert(auts.size() > 0);
+        DFA* tmp = auts[0];
+        for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(uni);
+            tmp = MonaDFA_product(tmp, auts[i], dfaOR);
+            TIME_END(uni);
+        }
+        return tmp;
     };
     monaInst.concat = [](DFA* a1, DFA* a2) -> DFA* {
         throw std::runtime_error("concat is not implemented");

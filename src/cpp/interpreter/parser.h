@@ -18,6 +18,7 @@ enum OPERATION {
     LOAD_REGEX,
     INTERSECTION,
     INTERALL,
+    UNIALL,
     UNION,
     COMPLEMENT,
     CONCAT,
@@ -37,6 +38,7 @@ const std::map<std::string, OPERATION> STR_OP = {
     {"compl", COMPLEMENT},
     {"concat", CONCAT},
     {"interall", INTERALL},
+    {"unionall", UNIALL},
 
     {"is_empty", EMPTINESS_CHECK},
     {"incl", INCLUSION_CHECK},

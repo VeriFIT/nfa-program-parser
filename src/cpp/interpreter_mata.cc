@@ -78,6 +78,20 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return aut;
     };
+    mataInst.uni_all = [](const std::vector<mata::nfa::Nfa>& auts) -> mata::nfa::Nfa {
+        assert(auts.size() > 0);
+        mata::nfa::Nfa tmp = auts[0];
+        for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(uni);
+            tmp = mata::nfa::uni(tmp, auts[i]);
+            TIME_END(uni);
+            TIME_BEGIN(trim);
+            tmp.trim();
+            TIME_END(trim);
+        }
+        tmp.alphabet = auts[0].alphabet;
+        return tmp;
+    };
     mataInst.concat = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
         mata::nfa::Nfa aut = a1;
         TIME_BEGIN(concat);

@@ -28,6 +28,7 @@ struct Instance {
     std::function<NFA(const NFA&, const NFA&)> intersection;
     std::function<NFA(const std::vector<NFA>)> inter_all;
     std::function<NFA(const NFA&, const NFA&)> uni;
+    std::function<NFA(const std::vector<NFA>)> uni_all;
     std::function<NFA(const NFA&)> complement;
     std::function<NFA(const NFA&, const NFA&)> concat;
     std::function<bool(const NFA&)> is_empty;
@@ -72,6 +73,9 @@ public:
                 break;
             case UNION:
                 uni(this->program[i].result.value(), this->program[i].params);
+                break;
+            case UNIALL:
+                uni_all(this->program[i].result.value());
                 break;
             case COMPLEMENT:
                 complement(this->program[i].result.value(), this->program[i].params);
@@ -170,6 +174,14 @@ private:
             tmp = this->instance.uni(tmp, this->aut_table.at(params[i]));
         }
         this->aut_table[res] = tmp;
+    }
+
+    void uni_all(const std::string& res) {
+        std::vector<NFA> nfas {};
+        for(const std::string& name : this->load_all_auts) {
+            nfas.emplace_back(this->aut_table[name]);
+        }
+        this->aut_table[res] = this->instance.uni_all(nfas);
     }
 
     void concat(const std::string& res, const std::vector<std::string>& params) {

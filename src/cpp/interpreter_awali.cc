@@ -102,6 +102,19 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return res;
     };
+    awaliInst.uni_all = [](const std::vector<automaton_t>& auts) -> automaton_t {
+        assert(auts.size() > 0);
+        automaton_t tmp = auts[0]; 
+        for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(uni);
+            tmp = sum(tmp, auts[i]);
+            TIME_END(uni);
+            TIME_BEGIN(trim);
+            tmp = trim(tmp);
+            TIME_END(trim);
+        }
+        return tmp;
+    };
     awaliInst.concat = [](const automaton_t& a1, const automaton_t& a2) -> automaton_t {
         TIME_BEGIN(concat);
         automaton_t a1prime = standard(a1);

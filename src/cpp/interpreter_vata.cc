@@ -108,7 +108,20 @@ int main(int argc, char** argv) {
         TIME_END(trim);
         return aut;
     };
-    vataInst.uni = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
+    vataInst.uni_all = [](const std::vector<VATA::ExplicitTreeAut>& auts) -> VATA::ExplicitTreeAut {
+        assert(auts.size() > 0);
+        VATA::ExplicitTreeAut tmp = auts[0];
+        for(size_t i = 1; i < auts.size(); i++) {
+            TIME_BEGIN(uni);
+            tmp = VATA::ExplicitTreeAut::Union(tmp, auts[i]);
+            TIME_END(uni);
+            TIME_BEGIN(trim);
+            tmp = tmp.RemoveUselessStates();
+            TIME_END(trim);
+        }
+        return tmp;
+    };
+    vataInst.concat = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
         throw std::runtime_error("concat is not implemented");
     };
     vataInst.complement = [](const VATA::ExplicitTreeAut& a1) -> VATA::ExplicitTreeAut {
