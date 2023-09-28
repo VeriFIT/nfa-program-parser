@@ -1,0 +1,3 @@
+load_automata
+aut0 = (unionall)
+is_empty aut0
