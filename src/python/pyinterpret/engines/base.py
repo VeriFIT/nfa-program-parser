@@ -71,10 +71,21 @@ class Engine(abc.ABC, metaclass=EngineMeta):
     def intersection_all(self, aut_list: list) -> Any:
         """Implementation of `aut3 = (interall)` instruction
 
-        Makes union of aut1 and aut2 creating automaton in process
+        Makes intersection of aut1 and aut2 creating automaton in process
 
         :param aut_list: list of automata
         :return: intersection of all automata in list
+        """
+        pass
+
+    @abc.abstractmethod
+    def union_all(self, aut_list: list) -> Any:
+        """Implementation of `aut3 = (unionall)` instruction
+
+        Makes union of aut1 and aut2 creating automaton in process
+
+        :param aut_list: list of automata
+        :return: union of all automata in list
         """
         pass
 

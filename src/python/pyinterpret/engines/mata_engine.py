@@ -25,6 +25,13 @@ class MataEngine(engine_base.Engine):
             result = libmata.intersection(result, aut)
         return result
 
+    @timed(timer="union")
+    def union_all(self, aut_list: list) -> Any:
+        result = aut_list[0]
+        for aut in aut_list[1:]:
+            result = libmata.union(result, aut)
+        return result
+
     @timed(timer="complement")
     def complement(self, lhs: Any, alphabet: Any) -> Any:
         return libmata.complement(lhs, alphabet)
