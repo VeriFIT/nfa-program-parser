@@ -69,8 +69,9 @@ int main(int argc, char** argv) {
         return tmp;
     };
     mataInst.uni = [](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
+        mata::nfa::Nfa aut = a1;
         TIME_BEGIN(uni);
-        mata::nfa::Nfa aut = mata::nfa::uni(a1, a2);
+        aut.uni(a2);
         TIME_END(uni);
         aut.alphabet = a1.alphabet;
         TIME_BEGIN(trim);
@@ -83,7 +84,7 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
             TIME_BEGIN(uni);
-            tmp = mata::nfa::uni(tmp, auts[i]);
+            tmp.uni(auts[i]);
             TIME_END(uni);
             TIME_BEGIN(trim);
             tmp.trim();
