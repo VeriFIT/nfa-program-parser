@@ -159,7 +159,9 @@ int main(int argc, char** argv) {
 
     try {
         Interpreter<VATA::ExplicitTreeAut> interpret(vataInst, automata);
-        interpret.run_program(input); 
+        TIME_BEGIN(overall);
+        interpret.run_program(input);
+        TIME_END(overall); 
     } catch (const std::exception &exc) {
         std::cerr << "error: " << exc.what();
         return -1;
