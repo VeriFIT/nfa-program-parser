@@ -61,6 +61,7 @@ def load_program(src, automata_src):
     return automata, program
 
 
+@timed(timer='interpretation')
 def interpret_program(engine, program, automata_db, alphabet):
     for inst in program:
         if inst[0] == Operation.Union:
@@ -109,6 +110,7 @@ def load_automata_db(automata_tokens, automata_sources):
     }
 
 
+@timed(timer="overall")
 def launch():
     if len(sys.argv) < 3:
         die(f"usage: python3 interpreter.py <ENGINE> <PROGRAM.emp> [AUT1.mata, ..., AUTn.mata]")
