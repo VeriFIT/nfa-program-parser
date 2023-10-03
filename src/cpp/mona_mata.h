@@ -165,11 +165,12 @@ std::vector<int> get_finals(std::string line) {
 		while (1) {
 			if (x.length()==0) break;
 			if ((x[0]==' ')||(x[0]=='&')) {x=x.substr(1); continue;}
-			if ((a=get_neg_state(x))!=-1) {
+			if ((a=get_state(x))!=-1) {
 				finals.push_back(a);
 				x=remove_state(x);
 			} else {
-
+				std::cerr << "Error parsing final states: " << x << std::endl;
+				exit(1);
 			}
 		}
 
@@ -203,10 +204,10 @@ bdd_ptr process_line(std::string s, int sink, bdd_manager *bddm,int nondet_track
 	if (s[0]==' ') return process_line(s.substr(1),sink,bddm,nondet_track, nondet_size,seq);
 	if (s[0]=='&') return process_line(s.substr(1),sink,bddm,nondet_track, nondet_size,seq);
 	int a;
-	if((a=s.find("true"))!=std::string::npos)
+	if((a=s.find("\\true"))!=std::string::npos)
 		return process_line(s.substr(4),sink,bddm,nondet_track, nondet_size,seq);
 	// create BDD
-	if((a=s.find("false"))!=std::string::npos)
+	if((a=s.find("\\false"))!=std::string::npos)
 		return bdd_find_leaf_hashed_add_root(bddm,sink); // false -> send everything to SINK
 	a=get_pos_indice(s);
 	if (a!=-1) {
@@ -300,7 +301,7 @@ DFA *mona_input (std::filesystem::path filename) {
 	std::vector<std::string> input;
 	input=read_input(filename);
 	// count the number of transitions starting from particular states
-	std::vector<int> aut_states, nonfinals;
+	std::vector<int> aut_states, finals;
 	int maxindice=0;
 	int initstate=-1;
 	for (std::string s : input) {
@@ -314,7 +315,7 @@ DFA *mona_input (std::filesystem::path filename) {
 			if (aut_states.size()<=a)
 				aut_states.resize(a+1);
 		}
-		if (nonfinals.size()==0) nonfinals=get_finals(s);
+		if (finals.size()==0) finals=get_finals(s);
 		a=get_state(s);
 		if (a==-1) continue;
 		if (aut_states.size()<=a)
@@ -329,7 +330,7 @@ DFA *mona_input (std::filesystem::path filename) {
 			if (str[0]==' ') { str=str.substr(1); continue;}
 			if (str[0]=='&') { str=str.substr(1); continue;}
 			/* remove true from the input */
-			if((str.find("true"))==0) {str=str.substr(4); continue; } 
+			if((str.find("\\true"))==0) {str=str.substr(4); continue; } 
 			if (((i1=get_pos_indice(str))!=-1) || ((i2=get_neg_indice(str))!=-1)) {
 				if (i1>maxindice) maxindice=i1;
 				if (i2>maxindice) maxindice=i2;
@@ -344,9 +345,10 @@ DFA *mona_input (std::filesystem::path filename) {
 
 		}
 	}
+
 	// SINK is a fresh state with higher number then all other states in the automaton
 	if (state_map.find("@SINK")!=state_map.end()) { 
-		std::cout << "M2M internal error: @SINK is reserved kea for a sink state\n";
+		std::cout << "M2M internal error: @SINK is reserved key for a sink state\n";
 		exit(1);
 	}
 	state_map["@SINK"]=state_map.size();
@@ -378,10 +380,10 @@ DFA *mona_input (std::filesystem::path filename) {
 			state_ptr=bdd_find_leaf_hashed_add_root(bddm,sink);
 		}
 		(aut->q)[i]=state_ptr;
-		(aut->f)[i]=1;
-	}
-	for (int i : nonfinals) {
 		(aut->f)[i]=-1;
+	}
+	for (int i : finals) {
+		(aut->f)[i]=1;
 	}
 	// set sink
 	(aut->q)[sink]=bdd_find_leaf_hashed_add_root(bddm,sink);
