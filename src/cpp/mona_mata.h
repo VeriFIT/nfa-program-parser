@@ -57,23 +57,6 @@ DFA *MonaDFA_product(DFA* d1, DFA* d2, dfaProductType mode) {
 
 }
 
-// read input into a vector of strings
-std::vector<std::string> read_input(std::filesystem::path filename) {
-	std::ifstream infile (filename);
-	if (infile.is_open()) {
-		std::vector<std::string> input;
-		std::string line;
-		while (std::getline(infile, line)) {
-			input.push_back(line);
-		}
-		infile.close();
-		return input;
-	} else {
-		std::cout << "ERROR: Can not open file: "<< filename <<"\n";
-		exit(1);
-	}
-}
-
 // **********************************************
 // basic operation for parsing the input string
 
@@ -246,12 +229,12 @@ unsigned prod_term_fn(unsigned  p, unsigned q) {
 }
 
 
-std::tuple<bdd_manager *, bdd_ptr> process_state(int state, int num, int sink, int first_nondet_track, int nondet_size, std::vector<std::string> input) {
+std::tuple<bdd_manager *, bdd_ptr> process_state(int state, int num, int sink, int first_nondet_track, int nondet_size, const std::unordered_map<int,std::vector<std::string>>& transitions) {
 	int seq=0;
 	sink_global=sink;
 	bdd_manager *bddm;
 	bdd_ptr state_ptr;
-	for (std::string s : input) {
+	for (std::string s : transitions[state]) {
 		// Name of a state can not start with "a" and "!"
 		if ((s[0]=='a')||(s[0]=='!')) {
 			std::cout << "M2M Internal ERROR: name of a state starts with 'a' or '!' is not supported\n";
@@ -298,13 +281,21 @@ DFA *NewDFA(unsigned n, unsigned init, bdd_manager *bddm) {
 
 DFA *mona_input (std::filesystem::path filename) {
 	state_map.clear();
-	std::vector<std::string> input;
-	input=read_input(filename);
 	// count the number of transitions starting from particular states
 	std::vector<int> aut_states, finals;
 	int maxindice=0;
 	int initstate=-1;
-	for (std::string s : input) {
+
+	std::unordered_map<int,std::vector<std::string>> transitions;
+
+	std::ifstream infile(filename);
+	if (!infile.is_open()) {
+		std::cout << "ERROR: Can not open file: "<< filename << std::endl;
+		exit(1);
+	}
+	std::string line;
+	while (std::getline(infile, line)) {
+		std::string s = line;
 		int a;
 		if ((a=get_initial(s))!=-1) {
 			if (initstate!=-1) {
@@ -318,6 +309,7 @@ DFA *mona_input (std::filesystem::path filename) {
 		if (finals.size()==0) finals=get_finals(s);
 		a=get_state(s);
 		if (a==-1) continue;
+		transitions[a].push_back(line);
 		if (aut_states.size()<=a)
 			aut_states.resize(a+1);
 		aut_states[a]++;
@@ -345,6 +337,7 @@ DFA *mona_input (std::filesystem::path filename) {
 
 		}
 	}
+	infile.close();
 
 	// SINK is a fresh state with higher number then all other states in the automaton
 	if (state_map.find("@SINK")!=state_map.end()) { 
@@ -372,7 +365,7 @@ DFA *mona_input (std::filesystem::path filename) {
 		if (aut_states[i]) {
 			// there are defined rules for state i
 			bdd_manager *state_bddm;
-			std::tie(state_bddm, state_ptr)=process_state(i,aut_states[i], sink, maxindice+1, level_bits, input);
+			std::tie(state_bddm, state_ptr)=process_state(i,aut_states[i], sink, maxindice+1, level_bits, transitions);
 			state_ptr=bdd_apply1(state_bddm, state_ptr, bddm, &fn_identity);
 			bdd_kill_manager(state_bddm);
 		} else {
