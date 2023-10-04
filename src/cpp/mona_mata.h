@@ -234,7 +234,7 @@ std::tuple<bdd_manager *, bdd_ptr> process_state(int state, int num, int sink, i
 	sink_global=sink;
 	bdd_manager *bddm;
 	bdd_ptr state_ptr;
-	for (std::string s : transitions[state]) {
+	for (const std::string& s : transitions.at(state)) {
 		// Name of a state can not start with "a" and "!"
 		if ((s[0]=='a')||(s[0]=='!')) {
 			std::cout << "M2M Internal ERROR: name of a state starts with 'a' or '!' is not supported\n";
