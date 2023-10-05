@@ -18,6 +18,10 @@
 #include "utils/util.h"
 #include "utils/common.h"
 
+#define SIM_THRESHOLD 1000
+
+#define REDUCE_WRAP(aut) aut.num_of_states() <= SIM_THRESHOLD ? mata::nfa::reduce(aut) : aut
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         std::cerr << "error: Program expects at least one argument, try '--help' for help" << std::endl;
@@ -44,8 +48,8 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa a2prime = a2;
         if(params.sim_red) {
             TIME_BEGIN(reduce);
-            a1prime = mata::nfa::reduce(a1);
-            a2prime = mata::nfa::reduce(a2);
+            a1prime = REDUCE_WRAP(a1);
+            a2prime = REDUCE_WRAP(a2);
             TIME_END(reduce);
         }
         
@@ -64,7 +68,7 @@ int main(int argc, char** argv) {
         for(size_t i = 1; i < auts.size(); i++) {
             if(params.sim_red) {
                 TIME_BEGIN(reduce);
-                tmp = mata::nfa::reduce(tmp);
+                tmp = REDUCE_WRAP(tmp);
                 TIME_END(reduce);
             }
             TIME_BEGIN(intersection);
@@ -79,11 +83,6 @@ int main(int argc, char** argv) {
     };
     mataInst.uni = [&params](const mata::nfa::Nfa& a1, const mata::nfa::Nfa& a2) -> mata::nfa::Nfa {
         mata::nfa::Nfa aut = a1;
-        if(params.sim_red) {
-            TIME_BEGIN(reduce);
-            aut = mata::nfa::reduce(aut);
-            TIME_END(reduce);
-        }
         TIME_BEGIN(uni);
         aut.uni(a2);
         TIME_END(uni);
@@ -97,11 +96,6 @@ int main(int argc, char** argv) {
         assert(auts.size() > 0);
         mata::nfa::Nfa tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
-            if(params.sim_red) {
-                TIME_BEGIN(reduce);
-                tmp = mata::nfa::reduce(tmp);
-                TIME_END(reduce);
-            }
             TIME_BEGIN(uni);
             tmp.uni(auts[i]);
             TIME_END(uni);
@@ -116,7 +110,7 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa aut = a1;
         if(params.sim_red) {
             TIME_BEGIN(reduce);
-            aut = mata::nfa::reduce(aut);
+            aut = REDUCE_WRAP(aut);
             TIME_END(reduce);
         }
         TIME_BEGIN(concat);
@@ -132,7 +126,7 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa a1prime = a1;
         if(params.sim_red) {
             TIME_BEGIN(reduce);
-            a1prime = mata::nfa::reduce(a1);
+            a1prime = REDUCE_WRAP(a1);
             TIME_END(reduce);
         }
         TIME_BEGIN(compl);
@@ -157,8 +151,8 @@ int main(int argc, char** argv) {
         mata::nfa::Nfa a2prime = a2;
         if(params.sim_red) {
             TIME_BEGIN(reduce);
-            a1prime = mata::nfa::reduce(a1);
-            a2prime = mata::nfa::reduce(a2);
+            a1prime = REDUCE_WRAP(a1);
+            a2prime = REDUCE_WRAP(a2);
             TIME_END(reduce);
         }
         TIME_BEGIN(inclusion_check);
