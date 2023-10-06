@@ -6,8 +6,9 @@ import FAdo.fa as fa
 
 
 class FadoEngine(engine_base.Engine):
+    @timed(timer='trim')
     def trim(self, lhs: Any):
-        return lhs
+        return lhs.trim()
 
     @timed(timer="determinization")
     def determinize(self, lhs):
@@ -40,6 +41,7 @@ class FadoEngine(engine_base.Engine):
 
     @timed(timer="conversion")
     def convert_db(self, db: dict, _) -> Any:
+        sigma = set()
         for token, aut in db.items():
             nfa = fa.NFA()
             for init in aut.initial_states:
@@ -47,12 +49,15 @@ class FadoEngine(engine_base.Engine):
             for fin in aut.final_states:
                 nfa.addFinal(nfa.stateIndex(fin, True))
             for trans in aut.iterate():
+                sigma.add(trans.symbol)
                 nfa.addTransition(
                     nfa.stateIndex(trans.source, True),
                     trans.symbol,
                     nfa.stateIndex(trans.target, True)
                 )
             db[token] = nfa
+        for aut in db.values():
+            aut.setSigma(list(sigma))
         return db
 
     @timed(timer="intersection")
