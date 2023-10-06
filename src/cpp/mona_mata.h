@@ -131,10 +131,26 @@ std::string remove_indice (std::string line) {
 }
 
 int get_initial(std::string line) {
+	std::vector<int> initials;
 	if(((line.find("\%Initial"))!=std::string::npos)||((line.find("\%InitialFormula"))!=std::string::npos)) {
 		int a=line.find(" ");
 		std::string x=line.substr(a+1);
-		return get_state(x);
+		while (1) {
+			if (x.length()==0) break;
+			if ((x[0]==' ')||(x[0]=='&')) {x=x.substr(1); continue;}
+			if ((a=get_state(x))!=-1) {
+				initials.push_back(a);
+				x=remove_state(x);
+			} else {
+				std::cerr << "Error parsing initial states: " << x << std::endl;
+				exit(1);
+			}
+		}
+		if(initials.size() != 1){
+			std::cerr << "Multiple initial states" << std::endl;
+			exit(1);
+		}
+		return initials[0];
 	}
 	return -1;
 
