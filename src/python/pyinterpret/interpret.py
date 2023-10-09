@@ -11,8 +11,6 @@ from pyinterpret.utils import timed, die
 import libmata.parser as mata_parser
 import libmata.alphabets as alph
 
-number_matcher = re.compile("\d+")
-
 
 class Operation(Enum):
     Intersection = 1
@@ -95,16 +93,10 @@ def interpret_program(engine, program, automata_db, alphabet):
 
 @timed(timer="construction")
 def load_automata_db(automata_tokens, automata_sources):
-    automata_to_load = []
-    token_len = len(automata_tokens)
-    for token in automata_tokens:
-        if m := number_matcher.search(token):
-            index = int(m.group(0)) - 1
-            if index >= token_len:
-                die(f"cannot load {token} (out of bounds)")
-            automata_to_load.append(automata_sources[index])
+    if len(automata_tokens) > len(automata_sources):
+        die(f"not enough automata sources: {len(automata_tokens)} (need) vs {len(automata_sources)} (got)")
     alphabet = alph.OnTheFlyAlphabet()
-    mata_automata = mata_parser.from_mata(automata_to_load, alphabet)
+    mata_automata = mata_parser.from_mata(automata_sources, alphabet)
     return alphabet, {
         key: aut for (key, aut) in zip(automata_tokens, mata_automata)
     }
