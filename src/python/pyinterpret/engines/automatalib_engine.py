@@ -8,13 +8,6 @@ import automata.fa.nfa as nfa
 import automata.fa.dfa as dfa
 
 
-def parse_targets(aut, state):
-    targets = defaultdict(set)
-    for trans in aut.get_transitions_from_state(state):
-        targets[trans.symbol].update(trans.targets)
-    return targets
-
-
 def parse_states_and_trans(aut):
     transitions = {}
     states = set()
@@ -78,7 +71,9 @@ class AutomataLibEngine(engine_base.Engine):
                 for state in aut_states if state in transitions.keys()
             }
             initial_state = f"q{aut_initial_states[0]}"
+            states.add(initial_state)
             final_states = {f"q{f}" for f in aut.final_states}
+            states.update(final_states)
             nfa_aut = nfa.NFA(
                 states=states,
                 input_symbols=input_symbols,
