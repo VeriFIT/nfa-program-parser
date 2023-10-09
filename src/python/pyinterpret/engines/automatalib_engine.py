@@ -31,7 +31,7 @@ class AutomataLibEngine(engine_base.Engine):
     def on_demand_determinize_all(self, automata: list[dfa.DFA | nfa.NFA]):
         if any(isinstance(aut, dfa.DFA) for aut in automata):
             return [
-                self.determinize(aut) if isinstance(aut, dfa.DFA) else aut for aut in automata
+                self.determinize(aut) if isinstance(aut, nfa.NFA) else aut for aut in automata
             ]
         else:
             return automata
