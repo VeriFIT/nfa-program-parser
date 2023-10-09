@@ -204,7 +204,7 @@ bdd_ptr process_line(std::string s, int sink, bdd_manager *bddm,int nondet_track
 	if (s[0]=='&') return process_line(s.substr(1),sink,bddm,nondet_track, nondet_size,seq);
 	int a;
 	if((a=s.find("\\true"))!=std::string::npos)
-		return process_line(s.substr(4),sink,bddm,nondet_track, nondet_size,seq);
+		return process_line(s.substr(5),sink,bddm,nondet_track, nondet_size,seq);
 	// create BDD
 	if((a=s.find("\\false"))!=std::string::npos)
 		return bdd_find_leaf_hashed_add_root(bddm,sink); // false -> send everything to SINK
@@ -338,7 +338,7 @@ DFA *mona_input (std::filesystem::path filename) {
 			if (str[0]==' ') { str=str.substr(1); continue;}
 			if (str[0]=='&') { str=str.substr(1); continue;}
 			/* remove true from the input */
-			if((str.find("\\true"))==0) {str=str.substr(4); continue; } 
+			if((str.find("\\true"))==0) {str=str.substr(5); continue; } 
 			if (((i1=get_pos_indice(str))!=-1) || ((i2=get_neg_indice(str))!=-1)) {
 				if (i1>maxindice) maxindice=i1;
 				if (i2>maxindice) maxindice=i2;
