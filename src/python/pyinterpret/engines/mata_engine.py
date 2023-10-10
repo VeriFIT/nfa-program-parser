@@ -12,11 +12,13 @@ class MataEngine(engine_base.Engine):
 
     @timed(timer="union")
     def union(self, lhs: Any, rhs: Any) -> Any:
-        return libmata.union(lhs, rhs)
+        lhs_copy = lhs.deepcopy()
+        return lhs_copy.union(rhs)
 
     @timed(timer="concat")
     def concat(self, lhs: libmata.Nfa, rhs: libmata.Nfa) -> libmata.Nfa:
-        return libmata.concatenate(lhs, rhs)
+        lhs_copy = lhs.deepcopy()
+        return lhs_copy.concatenate(rhs)
 
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list) -> Any:
@@ -27,9 +29,9 @@ class MataEngine(engine_base.Engine):
 
     @timed(timer="union")
     def union_all(self, aut_list: list) -> Any:
-        result = aut_list[0]
+        result = aut_list[0].deepcopy()
         for aut in aut_list[1:]:
-            result = libmata.union(result, aut)
+            result.union(aut)
         return result
 
     @timed(timer="complement")
