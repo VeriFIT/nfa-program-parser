@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyinterpret"
 description = "Python Interpret of NFA .emp programs"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.10"
 authors = [
     {name = "Tomas Fiedor", email = "TomasFiedor@gmail.com"}
 ]
 dependencies = [
-    "libmata==0.105.0",
+    "libmata==1.0.0",
     "automata-lib>=8.0.0",
     "fado>=2.1.2"
 ]
