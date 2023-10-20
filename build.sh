@@ -1,7 +1,10 @@
 #!/bin/bash
-basedir=$(realpath $(dirname "$0"))
+#
+BASEDIR=$(realpath $(dirname "$0"))
+PROJECTDIR=$(realpath "$BASEDIR/../..")
+
 echo "[!] Building C++ interpret"
-pushd $basedir
+pushd $BASEDIR
 mkdir -p build
 cd build
 cmake ..  -DCMAKE_BUILD_TYPE=Release
@@ -10,6 +13,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-cp ./src/cpp/*-interpreter ~/bin
+cp $BASEDIR/build/src/cpp/*-interpreter $PROJECTDIR/bin
 popd
 echo "[done]"
