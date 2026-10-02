@@ -22,7 +22,8 @@ enum OPERATION {
     UNION,
     COMPLEMENT,
     CONCAT,
-    DETERMINIZATION,
+    DETERMINIZE,
+    MINIMIZE,
     EMPTINESS_CHECK,
     INCLUSION_CHECK,
     EQUIVALENCE_CHECK,
@@ -39,6 +40,8 @@ const std::map<std::string, OPERATION> STR_OP = {
     {"concat", CONCAT},
     {"interall", INTERALL},
     {"unionall", UNIALL},
+    {"determinize", DETERMINIZE},
+    {"minimize", MINIMIZE},
 
     {"is_empty", EMPTINESS_CHECK},
     {"incl", INCLUSION_CHECK},
@@ -54,14 +57,14 @@ struct SSA_Call {
 
 std::string next_token(std::istringstream& line_stream) {
     std::string token;
-    
+
     do {
         line_stream >> token;
     } while (token == "(" || token == ")");
 
     if(token.size() > 0 && token[0] == '(') {
         return token.substr(1);
-    } 
+    }
     if(token.size() > 0 && token.back() == ')') {
         return token.substr(0, token.size() - 1);
     }
@@ -74,7 +77,7 @@ void parse_operation(std::istringstream& line_stream, SSA_Call& result) {
     while(token != "") {
         result.params.push_back(token);
         token = next_token(line_stream);
-    } 
+    }
 }
 
 std::vector<SSA_Call> parse_program(std::ifstream &input) {
@@ -97,8 +100,13 @@ std::vector<SSA_Call> parse_program(std::ifstream &input) {
         } else if (token == "is_empty") {
             line_stream >> param;
             program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
-        }
-        else if (token == "incl") {
+        } else if (token == "determinize") {
+            line_stream >> param;
+            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
+        } else if (token == "minimize") {
+            line_stream >> param;
+            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
+        } else if (token == "incl") {
             SSA_Call cl{STR_OP.at(token), {}, std::vector<Term>{}};
             line_stream >> param;
             cl.params.emplace_back(param);

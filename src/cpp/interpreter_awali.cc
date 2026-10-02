@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
         std::cout << "arguments: input.emp [aut.mata]*" << std::endl;
         return 0;
     }
-    
-    std::cout << std::boolalpha; 
+
+    std::cout << std::boolalpha;
 
     std::string program = std::string(argv[1]);
     std::vector<std::string> automata;
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
     Instance<automaton_t> awaliInst;
     awaliInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> automaton_t {
-        std::map<mata::nfa::State, state_t> state_map {}; 
+        std::map<mata::nfa::State, state_t> state_map {};
         std::string awali_alphabet;
         for (mata::Symbol s : t.alphabet->get_alphabet_symbols()) {
             if(s > 255) {
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
             awali_alphabet.push_back(s);
         }
         automaton_t awali_aut = automaton_t::from(awali_alphabet);
-        
+
         TIME_BEGIN(construction);
         for (mata::nfa::State s = 0; s < t.num_of_states(); ++s) {
             state_t new_state = awali_aut->add_state();
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     };
     awaliInst.inter_all = [](const std::vector<automaton_t>& auts) -> automaton_t {
         assert(auts.size() > 0);
-        automaton_t tmp = auts[0]; 
+        automaton_t tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
             TIME_BEGIN(intersection);
             tmp = product(tmp, auts[i]);
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     };
     awaliInst.uni_all = [](const std::vector<automaton_t>& auts) -> automaton_t {
         assert(auts.size() > 0);
-        automaton_t tmp = auts[0]; 
+        automaton_t tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
             TIME_BEGIN(uni);
             tmp = sum(tmp, auts[i]);
@@ -142,6 +142,20 @@ int main(int argc, char** argv) {
         std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
     };
+    awaliInst.determinize = [](const automaton_t& a1) -> automaton_t {
+        TIME_BEGIN(determinize);
+        automaton_t res = determinize(a1);
+        TIME_END(determinize);
+        return res;
+    };
+    awaliInst.minimize = [](const automaton_t& a1) -> automaton_t {
+        TIME_BEGIN(minimize);
+    const automaton_t min = minimal_automaton(a1, {MINIM_ALGO = DETERMINIZE_QUOTIENT, QUOTIENT_ALGO = HOPCROFT});
+
+        TIME_END(minimize);
+        return min;
+    };
+
     awaliInst.is_included = [](const automaton_t& a1, const automaton_t& a2) -> bool {
         // TODO: it seems that awali does not support inclusion checking (just equivalence checking)
         TIME_BEGIN(inclusion_check);
@@ -161,7 +175,7 @@ int main(int argc, char** argv) {
         Interpreter<automaton_t> interpret(awaliInst, automata);
         TIME_BEGIN(overall);
         interpret.run_program(input);
-        TIME_END(overall); 
+        TIME_END(overall);
     } catch (const std::exception &exc) {
         std::cerr << "error: " << exc.what();
         return -1;
