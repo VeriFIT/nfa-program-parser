@@ -21,6 +21,8 @@ class Operation(Enum):
     NaryIntersection = 6
     Concatenation = 7
     NaryUnion = 8
+    Determinize = 9
+    Minimize = 10
 
 
 def load_program(src, automata_src):
@@ -51,6 +53,10 @@ def load_program(src, automata_src):
             program.append((Operation.Complement, inst[0], inst[2]))
         elif 'is_empty' in inst:
             program.append((Operation.Emptiness, inst[1]))
+        elif 'determinize' in inst:
+            program.append((Operation.Determinize, inst[0], inst[2]))
+        elif 'minimize' in inst:
+            program.append((Operation.Minimize, inst[0], inst[2]))
         elif 'incl' in inst:
             program.append((Operation.Inclusion, inst[1], inst[2]))
         else:
@@ -87,6 +93,10 @@ def interpret_program(engine, program, automata_db, alphabet):
         elif inst[0] == Operation.Emptiness:
             result = engine.is_empty(automata_db[inst[1]])
             print(f"result: {result}")
+        elif inst[0] == Operation.Determinize:
+            automata_db[inst[1]] = engine.determinize(automata_db[inst[2]])
+        elif inst[0] == Operation.Minimize:
+            automata_db[inst[1]] = engine.minimize(automata_db[inst[2]])
         else:
             die(f"unsupported operation {inst[0]}")
 

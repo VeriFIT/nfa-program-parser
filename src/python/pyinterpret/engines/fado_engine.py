@@ -10,9 +10,13 @@ class FadoEngine(engine_base.Engine):
     def trim(self, lhs: Any):
         return lhs.trim()
 
-    @timed(timer="determinization")
+    @timed(timer="determinize")
     def determinize(self, lhs):
         return lhs.toDFA()
+
+    @timed(timer="minimize")
+    def minimize(self, lhs):
+        return lhs.minimalHopcroft()
 
     def on_demand_determinize_all(self, automata: list[fa.DFA | fa.NFA]):
         if any(isinstance(aut, fa.DFA) for aut in automata):

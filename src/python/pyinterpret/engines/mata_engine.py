@@ -10,15 +10,21 @@ class MataEngine(engine_base.Engine):
     def trim(self, lhs: libmata.Nfa):
         return lhs.trim()
 
+    @timed(timer="determinize")
+    def determinize(self, lhs: libmata.Nfa):
+        return libmata.determinize(lhs)
+
+    @timed(timer="minimize")
+    def minimize(self, lhs: libmata.Nfa):
+        return libmata.minimize(lhs)
+
     @timed(timer="union")
     def union(self, lhs: Any, rhs: Any) -> Any:
-        lhs_copy = lhs.deepcopy()
-        return lhs_copy.union(rhs)
+        return libmata.union(lhs, rhs)
 
     @timed(timer="concat")
     def concat(self, lhs: libmata.Nfa, rhs: libmata.Nfa) -> libmata.Nfa:
-        lhs_copy = lhs.deepcopy()
-        return lhs_copy.concatenate(rhs)
+        return libmata.concatenate(lhs, rhs)
 
     @timed(timer="intersection")
     def intersection_all(self, aut_list: list) -> Any:
@@ -29,9 +35,9 @@ class MataEngine(engine_base.Engine):
 
     @timed(timer="union")
     def union_all(self, aut_list: list) -> Any:
-        result = aut_list[0].deepcopy()
+        result = aut_list[0]
         for aut in aut_list[1:]:
-            result.union(aut)
+            result = libmata.union(result, aut)
         return result
 
     @timed(timer="complement")

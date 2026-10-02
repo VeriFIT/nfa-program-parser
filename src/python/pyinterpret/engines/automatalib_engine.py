@@ -24,9 +24,13 @@ class AutomataLibEngine(engine_base.Engine):
     def trim(self, lhs: Any):
         return lhs
 
-    @timed(timer="determinization")
+    @timed(timer="determinize")
     def determinize(self, lhs):
         return dfa.DFA.from_nfa(lhs, minify=False)
+
+    @timed(timer="minimize")
+    def minimize(self, lhs):
+        return dfa.DFA.minify(lhs)
 
     def on_demand_determinize_all(self, automata: list[dfa.DFA | nfa.NFA]):
         if any(isinstance(aut, dfa.DFA) for aut in automata):

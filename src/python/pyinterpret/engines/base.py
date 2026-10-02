@@ -44,6 +44,22 @@ class Engine(abc.ABC, metaclass=EngineMeta):
         pass
 
     @abc.abstractmethod
+    def determinize(self, aut1: Any) -> Any:
+        """Implementation of `aut2 = determinize aut1` instruction
+
+        Makes deterministic DFA of aut1 creating automaton in process
+        """
+        pass
+
+    @abc.abstractmethod
+    def minimize(self, aut1: Any) -> Any:
+        """Implementation of `aut2 = minimize aut1` instruction
+
+        Makes minimal DFA of DFA aut1
+        """
+        pass
+
+    @abc.abstractmethod
     def union(self, lhs: Any, rhs: Any) -> Any:
         """Implementation of `aut3 = (union aut1 aut2)` instruction
 
