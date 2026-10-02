@@ -1,5 +1,7 @@
 # Requirements
 
-  1. `awali` library installed (see [awali homepage](http://vaucanson-project.org/Awali/2.0/download.html) using `sudo make install`.
-  2. `libmata` installed using `sudo make install`
-  3. `libboost` installed using `sudo dnf install -y boost-devel`
+  1. `libmata` installed using `sudo make install` (see [Mata homepage](https://github.com/VeriFIT/mata))
+
+Alternatively, `nix develop` drops you into a shell with `libmata` and the
+Python dependencies already available, and `nix build` / `nix run` produce
+the C++ and Python interpreters directly (see `flake.nix`).
