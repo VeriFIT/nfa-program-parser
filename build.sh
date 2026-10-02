@@ -5,11 +5,12 @@ pushd $basedir
 mkdir -p build
 cd build
 cmake ..  -DCMAKE_BUILD_TYPE=Release
+#cmake ..  -DCMAKE_BUILD_TYPE=Debug
 make
 if [ $? -ne 0 ]; then
   exit 1
 fi
 
-cp ./src/cpp/*-interpreter ~/bin
+cp ./src/cpp/*-interpreter ../../../bin/
 popd
 echo "[done]"
