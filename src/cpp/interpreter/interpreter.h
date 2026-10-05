@@ -127,7 +127,7 @@ private:
     for (const mata::IntermediateAut &inter_aut : auts) {
       mata::nfa::Nfa aut_nfa =
           mata::nfa::builder::construct(inter_aut, this->alphabet.get());
-      aut_nfa.alphabet = this->alphabet;
+      aut_nfa.alphabet = this->alphabet.get();
       this->inter_auts.emplace_back(aut_nfa);
     }
   }
