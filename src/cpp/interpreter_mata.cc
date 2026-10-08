@@ -10,8 +10,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include <mata/applications/strings.hh>
 #include <mata/nfa/algorithms.hh>
 #include <mata/nfa/nfa.hh>
+#include <mata/nft/nft.hh>
 #include <mata/parser/inter-aut.hh>
 
 #include "interpreter/interpreter.h"
@@ -190,7 +192,22 @@ int main(int argc, char **argv) {
     return incl;
   };
 
+  mataInst.words_of_lengths = [](const mata::nfa::Nfa &a1,
+                                 const std::vector<unsigned> &lengths) -> bool {
+    // An NFA is a one-tape transducer; the lengths of further tapes can only be
+    // satisfied by an NFT, which the '.mata' loader does not produce.
+    const mata::nft::Nft nft{a1, lengths.size()};
+    TIME_BEGIN(words_of_lengths);
+    const std::optional<std::vector<mata::Word>> words{
+        mata::applications::strings::get_words_of_lengths(nft, lengths)};
+    TIME_END(words_of_lengths);
+    std::cout << "result: " << (words.has_value() ? "sat" : "unsat") << "\n"
+              << std::flush;
+    return words.has_value();
+  };
+
   std::ifstream input(params.program);
+
   if (!input.is_open()) {
     std::cerr << "error: could not open file " << params.program << std::endl;
     return -1;

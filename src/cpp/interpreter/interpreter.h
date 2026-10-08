@@ -12,6 +12,8 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -48,6 +50,9 @@ template <typename NFA> struct Instance {
   std::function<NFA(const NFA &)> determinize;
   std::function<NFA(const NFA &)> minimize;
   std::function<bool(const NFA &, const NFA &)> is_included;
+  /// Accepting words with one given length per tape; false when there are none.
+  std::function<bool(const NFA &, const std::vector<unsigned> &)>
+      words_of_lengths;
 };
 
 template <typename NFA> struct Interpreter {
@@ -110,6 +115,9 @@ public:
         break;
       case INCLUSION_CHECK:
         is_included(this->program[i].params[0], this->program[i].params[1]);
+        break;
+      case WORDS_OF_LENGTHS:
+        words_of_lengths(this->program[i].params);
         break;
       }
     }
@@ -248,6 +256,25 @@ private:
     assert(params.size() == 1);
     NFA tmp = this->aut_table.at(params[0]);
     this->aut_table[res] = this->instance.minimize(tmp);
+  }
+
+  // The literal arguments are the lengths, one per tape, in tape order.
+  void words_of_lengths(const std::vector<std::string> &params) {
+    if (params.size() < 2) {
+      throw std::runtime_error(
+          "words_of_lengths expects an automaton and at least one length");
+    }
+    std::vector<unsigned> lengths{};
+    lengths.reserve(params.size() - 1);
+    for (size_t i = 1; i < params.size(); ++i) {
+      try {
+        lengths.push_back(static_cast<unsigned>(std::stoul(params[i])));
+      } catch (const std::exception &) {
+        throw std::runtime_error("words_of_lengths: '" + params[i] +
+                                 "' is not a length");
+      }
+    }
+    this->instance.words_of_lengths(this->aut_table.at(params[0]), lengths);
   }
 };
 

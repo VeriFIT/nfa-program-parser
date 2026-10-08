@@ -1,32 +1,35 @@
 #ifndef _PARSER_EMP_H_
 #define _PARSER_EMP_H_
 
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <unordered_map>
+#include <algorithm>
 #include <chrono>
 #include <exception>
-#include <sstream>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
 #include <vector>
-#include <algorithm>
 
 enum OPERATION {
-    LOAD_CMD,
-    LOAD_ALL,
-    LOAD_REGEX,
-    INTERSECTION,
-    INTERALL,
-    UNIALL,
-    UNION,
-    COMPLEMENT,
-    CONCAT,
-    DETERMINIZE,
-    MINIMIZE,
-    EMPTINESS_CHECK,
-    INCLUSION_CHECK,
-    EQUIVALENCE_CHECK,
+  LOAD_CMD,
+  LOAD_ALL,
+  LOAD_REGEX,
+  INTERSECTION,
+  INTERALL,
+  UNIALL,
+  UNION,
+  COMPLEMENT,
+  CONCAT,
+  DETERMINIZE,
+  MINIMIZE,
+  EMPTINESS_CHECK,
+  INCLUSION_CHECK,
+  EQUIVALENCE_CHECK,
+  WORDS_OF_LENGTHS,
 };
 
 const std::map<std::string, OPERATION> STR_OP = {
@@ -45,84 +48,74 @@ const std::map<std::string, OPERATION> STR_OP = {
 
     {"is_empty", EMPTINESS_CHECK},
     {"incl", INCLUSION_CHECK},
+    {"words_of_lengths", WORDS_OF_LENGTHS},
 };
 
 typedef std::string Term; // variable or regex
 
 struct SSA_Call {
-    OPERATION operation;
-    std::optional<Term> result;
-    std::vector<Term> params;
+  OPERATION operation;
+  std::optional<Term> result;
+  std::vector<Term> params;
 };
 
-std::string next_token(std::istringstream& line_stream) {
-    std::string token;
+// Splits a line into tokens; the parentheses that may wrap the arguments of an
+// operation carry no meaning and are dropped.
+std::vector<std::string> tokenize(const std::string &line) {
+  std::string stripped{line};
+  std::erase(stripped, '(');
+  std::erase(stripped, ')');
 
-    do {
-        line_stream >> token;
-    } while (token == "(" || token == ")");
-
-    if(token.size() > 0 && token[0] == '(') {
-        return token.substr(1);
-    }
-    if(token.size() > 0 && token.back() == ')') {
-        return token.substr(0, token.size() - 1);
-    }
-    return token;
+  std::istringstream line_stream(stripped);
+  std::vector<std::string> tokens{};
+  for (std::string token; line_stream >> token;) {
+    tokens.push_back(token);
+  }
+  return tokens;
 }
 
-void parse_operation(std::istringstream& line_stream, SSA_Call& result) {
-    result.operation = STR_OP.at(next_token(line_stream));
-    std::string token = next_token(line_stream);
-    while(token != "") {
-        result.params.push_back(token);
-        token = next_token(line_stream);
-    }
-}
-
+// Parses one '.emp' program: one statement per line, '#' starts a comment line.
+//
+// A statement is either '<var> = <op> <arg>...', which binds the result of the
+// operation to <var>, or '<op> <arg>...', which discards it. An <arg> is the
+// name of an automaton bound earlier or, for the operations that take them, a
+// literal the operation itself interprets (e.g. the per-tape lengths of
+// 'words_of_lengths'). 'load_automaton <var>' is the exception: it names the
+// automaton it loads from the next input file and takes no arguments.
 std::vector<SSA_Call> parse_program(std::ifstream &input) {
-    std::vector<SSA_Call> program{};
-    std::string line;
+  std::vector<SSA_Call> program{};
+  std::string line;
 
-    while (std::getline(input, line)) {
-        line.erase(std::remove(line.begin(), line.end(), '('), line.end());
-        line.erase(std::remove(line.begin(), line.end(), ')'), line.end());
-
-        std::istringstream line_stream(line);
-        std::string token;
-        std::string param;
-        line_stream >> token;
-        if (token == "load_automaton") {
-            line_stream >> param;
-            program.push_back(SSA_Call{STR_OP.at(token), param, std::vector<Term>{}});
-        } else if(token == "load_automata") {
-            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{}});
-        } else if (token == "is_empty") {
-            line_stream >> param;
-            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
-        } else if (token == "determinize") {
-            line_stream >> param;
-            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
-        } else if (token == "minimize") {
-            line_stream >> param;
-            program.push_back(SSA_Call{STR_OP.at(token), {}, std::vector<Term>{param}});
-        } else if (token == "incl") {
-            SSA_Call cl{STR_OP.at(token), {}, std::vector<Term>{}};
-            line_stream >> param;
-            cl.params.emplace_back(param);
-            line_stream >> param;
-            cl.params.emplace_back(param);
-            program.push_back(cl);
-        } else {
-            // now token is result
-            SSA_Call cl{INTERSECTION, {token}, std::vector<Term>{}};
-            line_stream >> token; //'='
-            parse_operation(line_stream, cl);
-            program.push_back(cl);
-        }
+  while (std::getline(input, line)) {
+    const std::vector<std::string> tokens{tokenize(line)};
+    if (tokens.empty() || tokens.front().starts_with('#')) {
+      continue;
     }
 
-    return program;
+    const size_t op_at{(tokens.size() > 1 && tokens[1] == "=") ? 2 : 0};
+    if (op_at >= tokens.size()) {
+      throw std::runtime_error("no operation after '=' in: " + line);
+    }
+
+    const auto op_it{STR_OP.find(tokens[op_at])};
+    if (op_it == STR_OP.end()) {
+      throw std::runtime_error("unknown operation '" + tokens[op_at] + "'");
+    }
+
+    SSA_Call call{op_it->second,
+                  {},
+                  std::vector<Term>{tokens.begin() + op_at + 1, tokens.end()}};
+    if (op_at == 2) {
+      call.result = tokens[0];
+    }
+    if (call.operation == LOAD_CMD && !call.params.empty()) {
+      call.result = call.params.front();
+      call.params.clear();
+    }
+    program.push_back(call);
+  }
+
+  return program;
 }
 
 #endif
