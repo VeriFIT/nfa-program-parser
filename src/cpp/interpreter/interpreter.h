@@ -23,6 +23,18 @@
 #include "../utils/util.h"
 #include "parser.h"
 
+// Nfa::alphabet is a raw pointer in mata < 1.32.33 and a shared_ptr since; the
+// overload that does not match the revision in use is simply never called.
+inline void share_alphabet(mata::Alphabet *&dst,
+                           const std::shared_ptr<mata::OnTheFlyAlphabet> &src) {
+  dst = src.get();
+}
+
+inline void share_alphabet(std::shared_ptr<mata::Alphabet> &dst,
+                           const std::shared_ptr<mata::OnTheFlyAlphabet> &src) {
+  dst = src;
+}
+
 template <typename NFA> struct Instance {
   std::function<NFA(const mata::nfa::Nfa &, const std::string &filename)>
       mata_to_nfa;
@@ -51,8 +63,7 @@ template <typename NFA> struct Interpreter {
       std::make_shared<mata::OnTheFlyAlphabet>();
 
   Interpreter(const Instance<NFA> &inst, const std::vector<std::string> &args)
-      : instance(inst), param_cnt(0), program(), aut_table(), arguments(args) {
-  }
+      : instance(inst), param_cnt(0), program(), aut_table(), arguments(args) {}
 
 public:
   void run_program(std::ifstream &filename) {
@@ -127,7 +138,7 @@ private:
     for (const mata::IntermediateAut &inter_aut : auts) {
       mata::nfa::Nfa aut_nfa =
           mata::nfa::builder::construct(inter_aut, this->alphabet.get());
-      aut_nfa.alphabet = this->alphabet.get();
+      share_alphabet(aut_nfa.alphabet, this->alphabet);
       this->inter_auts.emplace_back(aut_nfa);
     }
   }
