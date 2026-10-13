@@ -103,9 +103,6 @@ int main(int argc, char** argv) {
         }
         return tmp;
     };
-    vataInst.concat = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
-        throw std::runtime_error("concat is not implemented");
-    };
     vataInst.complement = [](const VATA::ExplicitTreeAut& a1) -> VATA::ExplicitTreeAut {
         VATA::ExplicitTreeAut aut = bench::measure("compl", [&] { return a1.Complement(); });
         bench::measure("trim", [&] { aut = aut.RemoveUselessStates(); });

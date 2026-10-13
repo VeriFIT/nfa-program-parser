@@ -59,6 +59,14 @@ public:
   void run_program(std::ifstream &filename) {
     this->program = parse_program(filename);
     this->param_cnt = 0;
+    // An operation the engine lacks fails the whole run before anything is
+    // timed, rather than being skipped or failing midway.
+    for (const SSA_Call &call : this->program) {
+      if (!supports(call.operation)) {
+        throw std::runtime_error("operation '" + op_name(call.operation) +
+                                 "' is not supported by this interpreter");
+      }
+    }
 
     // load and minterminize all input automata
     prepare_mata_automata();
@@ -106,6 +114,47 @@ public:
         break;
       }
     }
+  }
+
+  bool supports(OPERATION op) const {
+    switch (op) {
+    case LOAD_CMD:
+    case LOAD_ALL:
+      return static_cast<bool>(this->instance.mata_to_nfa);
+    case INTERSECTION:
+      return static_cast<bool>(this->instance.intersection);
+    case INTERALL:
+      return static_cast<bool>(this->instance.inter_all);
+    case UNION:
+      return static_cast<bool>(this->instance.uni);
+    case UNIALL:
+      return static_cast<bool>(this->instance.uni_all);
+    case COMPLEMENT:
+      return static_cast<bool>(this->instance.complement);
+    case CONCAT:
+      return static_cast<bool>(this->instance.concat);
+    case EMPTINESS_CHECK:
+      return static_cast<bool>(this->instance.is_empty);
+    case DETERMINIZE:
+      return static_cast<bool>(this->instance.determinize);
+    case MINIMIZE:
+      return static_cast<bool>(this->instance.minimize);
+    case INCLUSION_CHECK:
+      return static_cast<bool>(this->instance.is_included);
+    case WORDS_OF_LENGTHS:
+      return static_cast<bool>(this->instance.words_of_lengths);
+    default: // e.g. load_regex: parsed, but no interpreter runs it
+      return false;
+    }
+  }
+
+  static std::string op_name(OPERATION op) {
+    for (const auto &[name, value] : STR_OP) {
+      if (value == op) {
+        return name;
+      }
+    }
+    return std::to_string(op);
   }
 
 private:
