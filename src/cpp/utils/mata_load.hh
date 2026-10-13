@@ -74,11 +74,16 @@ load_nfas(const std::vector<std::string> &files,
   return nfas;
 }
 
-/// Loads every command-line argument from @p first on as an NFA, over one
-/// alphabet that lives as long as the program: the columns of a pycobench input line.
-inline std::vector<mata::nfa::Nfa> load_nfas(int argc, char **argv, int first = 1) {
+/// Loads @p files as NFAs over one alphabet that lives as long as the program.
+inline std::vector<mata::nfa::Nfa> load_nfas(const std::vector<std::string> &files) {
   static const auto alphabet{std::make_shared<mata::OnTheFlyAlphabet>()};
-  return load_nfas(std::vector<std::string>(argv + first, argv + argc), alphabet);
+  return load_nfas(files, alphabet);
+}
+
+/// Loads every command-line argument from @p first on as an NFA: the columns of
+/// a pycobench input line.
+inline std::vector<mata::nfa::Nfa> load_nfas(int argc, char **argv, int first = 1) {
+  return load_nfas(std::vector<std::string>(argv + first, argv + argc));
 }
 
 } // namespace bench
