@@ -18,8 +18,8 @@
 
 #include "interpreter/interpreter.h"
 #include "interpreter/parser.h"
+#include "utils/bench.hh"
 #include "utils/common.h"
-#include "utils/util.h"
 
 #define SIM_THRESHOLD 1000
 
@@ -55,18 +55,15 @@ int main(int argc, char **argv) {
     mata::nfa::Nfa a1prime = a1;
     mata::nfa::Nfa a2prime = a2;
     if (params.sim_red) {
-      TIME_BEGIN(reduce);
-      a1prime = REDUCE_WRAP(a1);
-      a2prime = REDUCE_WRAP(a2);
-      TIME_END(reduce);
+      bench::measure("reduce", [&] {
+        a1prime = REDUCE_WRAP(a1);
+        a2prime = REDUCE_WRAP(a2);
+      });
     }
-
-    TIME_BEGIN(intersection);
-    mata::nfa::Nfa aut = mata::nfa::intersection(a1prime, a2prime);
-    TIME_END(intersection);
-    TIME_BEGIN(trim);
-    aut.trim();
-    TIME_END(trim);
+    mata::nfa::Nfa aut{bench::measure("intersection", [&] {
+      return mata::nfa::intersection(a1prime, a2prime);
+    })};
+    bench::measure("trim", [&] { aut.trim(); });
     aut.alphabet = a1.alphabet;
     return aut;
   };
@@ -76,16 +73,12 @@ int main(int argc, char **argv) {
     mata::nfa::Nfa tmp = auts[0];
     for (size_t i = 1; i < auts.size(); i++) {
       if (params.sim_red) {
-        TIME_BEGIN(reduce);
-        tmp = REDUCE_WRAP(tmp);
-        TIME_END(reduce);
+        bench::measure("reduce", [&] { tmp = REDUCE_WRAP(tmp); });
       }
-      TIME_BEGIN(intersection);
-      tmp = mata::nfa::intersection(tmp, auts[i]);
-      TIME_END(intersection);
-      TIME_BEGIN(trim);
-      tmp.trim();
-      TIME_END(trim);
+      tmp = bench::measure("intersection", [&] {
+        return mata::nfa::intersection(tmp, auts[i]);
+      });
+      bench::measure("trim", [&] { tmp.trim(); });
     }
     tmp.alphabet = auts[0].alphabet;
     return tmp;
@@ -93,13 +86,9 @@ int main(int argc, char **argv) {
   mataInst.uni = [&params](const mata::nfa::Nfa &a1,
                            const mata::nfa::Nfa &a2) -> mata::nfa::Nfa {
     mata::nfa::Nfa aut = a1;
-    TIME_BEGIN(uni);
-    aut.unite_nondet_with(a2);
-    TIME_END(uni);
+    bench::measure("uni", [&] { aut.unite_nondet_with(a2); });
     aut.alphabet = a1.alphabet;
-    TIME_BEGIN(trim);
-    aut.trim();
-    TIME_END(trim);
+    bench::measure("trim", [&] { aut.trim(); });
     return aut;
   };
   mataInst.uni_all =
@@ -107,12 +96,8 @@ int main(int argc, char **argv) {
     assert(auts.size() > 0);
     mata::nfa::Nfa tmp = auts[0];
     for (size_t i = 1; i < auts.size(); i++) {
-      TIME_BEGIN(uni);
-      tmp.unite_nondet_with(auts[i]);
-      TIME_END(uni);
-      TIME_BEGIN(trim);
-      tmp.trim();
-      TIME_END(trim);
+      bench::measure("uni", [&] { tmp.unite_nondet_with(auts[i]); });
+      bench::measure("trim", [&] { tmp.trim(); });
     }
     tmp.alphabet = auts[0].alphabet;
     return tmp;
@@ -121,56 +106,43 @@ int main(int argc, char **argv) {
                               const mata::nfa::Nfa &a2) -> mata::nfa::Nfa {
     mata::nfa::Nfa aut = a1;
     if (params.sim_red) {
-      TIME_BEGIN(reduce);
-      aut = REDUCE_WRAP(aut);
-      TIME_END(reduce);
+      bench::measure("reduce", [&] { aut = REDUCE_WRAP(aut); });
     }
-    TIME_BEGIN(concat);
-    aut.concatenate(a2);
-    TIME_END(concat);
+    bench::measure("concat", [&] { aut.concatenate(a2); });
     aut.alphabet = a1.alphabet;
-    TIME_BEGIN(trim);
-    aut.trim();
-    TIME_END(trim);
+    bench::measure("trim", [&] { aut.trim(); });
     return aut;
   };
   mataInst.complement = [&params](const mata::nfa::Nfa &a1) -> mata::nfa::Nfa {
     mata::nfa::Nfa a1prime = a1;
     if (params.sim_red) {
-      TIME_BEGIN(reduce);
-      a1prime = REDUCE_WRAP(a1);
-      TIME_END(reduce);
+      bench::measure("reduce", [&] { a1prime = REDUCE_WRAP(a1); });
     }
-    TIME_BEGIN(compl);
-    mata::nfa::Nfa aut = mata::nfa::complement(
-        a1prime, *a1.alphabet,
-        {{"algorithm", "classical"}, {"minimize", "false"}});
-    TIME_END(compl);
+    mata::nfa::Nfa aut{bench::measure("compl", [&] {
+      return mata::nfa::complement(
+          a1prime, *a1.alphabet,
+          {{"algorithm", "classical"}, {"minimize", "false"}});
+    })};
     aut.alphabet = a1.alphabet;
-    TIME_BEGIN(trim);
-    aut.trim();
-    TIME_END(trim);
+    bench::measure("trim", [&] { aut.trim(); });
     return aut;
   };
   mataInst.is_empty = [&params](const mata::nfa::Nfa &a1) -> bool {
-    TIME_BEGIN(emptiness_check);
-    bool empty = a1.is_lang_empty();
-    TIME_END(emptiness_check);
-    std::cout << "emptiness_check_result: " << empty << std::endl;
+    const bool empty{
+        bench::measure("emptiness_check", [&] { return a1.is_lang_empty(); })};
+    bench::report("emptiness_check_result", empty);
     return empty;
   };
   mataInst.determinize = [&params](const mata::nfa::Nfa &a1) -> mata::nfa::Nfa {
-    TIME_BEGIN(determinize);
-    mata::nfa::Nfa res{mata::nfa::determinize(a1)};
-    TIME_END(determinize);
+    mata::nfa::Nfa res{bench::measure(
+        "determinize", [&] { return mata::nfa::determinize(a1); })};
     res.alphabet = a1.alphabet;
     return res;
   };
   mataInst.minimize = [&params](const mata::nfa::Nfa &a1) -> mata::nfa::Nfa {
-    TIME_BEGIN(minimize);
-    mata::nfa::Nfa res{mata::nfa::algorithms::minimize_hopcroft(a1)};
-    // mata::nfa::Nfa res{ mata::nfa::minimize(a1) };
-    TIME_END(minimize);
+    mata::nfa::Nfa res{bench::measure("minimize", [&] {
+      return mata::nfa::algorithms::minimize_hopcroft(a1);
+    })};
     res.alphabet = a1.alphabet;
     return res;
   };
@@ -180,15 +152,15 @@ int main(int argc, char **argv) {
     mata::nfa::Nfa a1prime = a1;
     mata::nfa::Nfa a2prime = a2;
     if (params.sim_red) {
-      TIME_BEGIN(reduce);
-      a1prime = REDUCE_WRAP(a1);
-      a2prime = REDUCE_WRAP(a2);
-      TIME_END(reduce);
+      bench::measure("reduce", [&] {
+        a1prime = REDUCE_WRAP(a1);
+        a2prime = REDUCE_WRAP(a2);
+      });
     }
-    TIME_BEGIN(inclusion_check);
-    bool incl = mata::nfa::is_included(a1prime, a2prime);
-    TIME_END(inclusion_check);
-    std::cout << "inclusion_check_result: " << incl << std::endl;
+    const bool incl{bench::measure("inclusion_check", [&] {
+      return mata::nfa::is_included(a1prime, a2prime);
+    })};
+    bench::report("inclusion_check_result", incl);
     return incl;
   };
 
@@ -197,12 +169,12 @@ int main(int argc, char **argv) {
     // An NFA is a one-tape transducer; the lengths of further tapes can only be
     // satisfied by an NFT, which the '.mata' loader does not produce.
     const mata::nft::Nft nft{a1, lengths.size()};
-    TIME_BEGIN(words_of_lengths);
     const std::optional<std::vector<mata::Word>> words{
-        mata::applications::strings::get_words_of_lengths(nft, lengths)};
-    TIME_END(words_of_lengths);
-    std::cout << "result: " << (words.has_value() ? "sat" : "unsat") << "\n"
-              << std::flush;
+        bench::measure("words_of_lengths", [&] {
+          return mata::applications::strings::get_words_of_lengths(nft,
+                                                                   lengths);
+        })};
+    bench::report("result", words.has_value() ? "sat" : "unsat");
     return words.has_value();
   };
 
@@ -215,9 +187,7 @@ int main(int argc, char **argv) {
 
   try {
     Interpreter<mata::nfa::Nfa> interpret(mataInst, params.automata);
-    TIME_BEGIN(overall);
-    interpret.run_program(input);
-    TIME_END(overall);
+    bench::measure("overall", [&] { interpret.run_program(input); });
   } catch (const std::exception &exc) {
     std::cerr << "error: " << exc.what();
     return -1;

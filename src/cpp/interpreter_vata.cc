@@ -18,7 +18,7 @@
 
 #include "interpreter/parser.h"
 #include "interpreter/interpreter.h"
-#include "utils/util.h"
+#include "utils/bench.hh"
 
 VATA::ExplicitTreeAut mata_to_vata(const mata::nfa::Nfa &nfa, const std::string &header, VATA::Parsing::TimbukParser &parser) {
     std::stringstream ss;
@@ -72,52 +72,34 @@ int main(int argc, char** argv) {
         }
         ss << " x:0" << std::endl << std::endl << "Automaton A" << std::endl;
         
-        TIME_BEGIN(construction);
-        VATA::ExplicitTreeAut aut = mata_to_vata(t, ss.str(), parser);
-        TIME_END(construction);
+        VATA::ExplicitTreeAut aut = bench::measure("construction", [&] { return mata_to_vata(t, ss.str(), parser); });
         return aut;
     };
     vataInst.intersection = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
-        TIME_BEGIN(intersection);
-        VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Intersection(a1, a2);
-        TIME_END(intersection);
-        TIME_BEGIN(trim);
-        aut = aut.RemoveUselessStates();
-        TIME_END(trim);
+        VATA::ExplicitTreeAut aut = bench::measure("intersection", [&] { return VATA::ExplicitTreeAut::Intersection(a1, a2); });
+        bench::measure("trim", [&] { aut = aut.RemoveUselessStates(); });
         return aut;
     };
     vataInst.inter_all = [](const std::vector<VATA::ExplicitTreeAut>& auts) -> VATA::ExplicitTreeAut {
         assert(auts.size() > 0);
         VATA::ExplicitTreeAut tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
-            TIME_BEGIN(intersection);
-            tmp = VATA::ExplicitTreeAut::Intersection(tmp, auts[i]);
-            TIME_END(intersection);
-            TIME_BEGIN(trim);
-            tmp = tmp.RemoveUselessStates();
-            TIME_END(trim);
+            bench::measure("intersection", [&] { tmp = VATA::ExplicitTreeAut::Intersection(tmp, auts[i]); });
+            bench::measure("trim", [&] { tmp = tmp.RemoveUselessStates(); });
         }
         return tmp;
     };
     vataInst.uni = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
-        TIME_BEGIN(uni);
-        VATA::ExplicitTreeAut aut = VATA::ExplicitTreeAut::Union(a1, a2);
-        TIME_END(uni);
-        TIME_BEGIN(trim);
-        aut = aut.RemoveUselessStates();
-        TIME_END(trim);
+        VATA::ExplicitTreeAut aut = bench::measure("uni", [&] { return VATA::ExplicitTreeAut::Union(a1, a2); });
+        bench::measure("trim", [&] { aut = aut.RemoveUselessStates(); });
         return aut;
     };
     vataInst.uni_all = [](const std::vector<VATA::ExplicitTreeAut>& auts) -> VATA::ExplicitTreeAut {
         assert(auts.size() > 0);
         VATA::ExplicitTreeAut tmp = auts[0];
         for(size_t i = 1; i < auts.size(); i++) {
-            TIME_BEGIN(uni);
-            tmp = VATA::ExplicitTreeAut::Union(tmp, auts[i]);
-            TIME_END(uni);
-            TIME_BEGIN(trim);
-            tmp = tmp.RemoveUselessStates();
-            TIME_END(trim);
+            bench::measure("uni", [&] { tmp = VATA::ExplicitTreeAut::Union(tmp, auts[i]); });
+            bench::measure("trim", [&] { tmp = tmp.RemoveUselessStates(); });
         }
         return tmp;
     };
@@ -125,18 +107,12 @@ int main(int argc, char** argv) {
         throw std::runtime_error("concat is not implemented");
     };
     vataInst.complement = [](const VATA::ExplicitTreeAut& a1) -> VATA::ExplicitTreeAut {
-        TIME_BEGIN(compl);
-        VATA::ExplicitTreeAut aut = a1.Complement();
-        TIME_END(compl);
-        TIME_BEGIN(trim);
-        aut = aut.RemoveUselessStates();
-        TIME_END(trim);
+        VATA::ExplicitTreeAut aut = bench::measure("compl", [&] { return a1.Complement(); });
+        bench::measure("trim", [&] { aut = aut.RemoveUselessStates(); });
         return aut;
     };
     vataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {
-        TIME_BEGIN(emptiness_check);
-        bool empty = a1.IsLangEmpty();
-        TIME_END(emptiness_check);
+        bool empty = bench::measure("emptiness_check", [&] { return a1.IsLangEmpty(); });
         std::cout << "emptiness_check_result: " << empty << std::endl;
         return empty;
     };
@@ -144,9 +120,7 @@ int main(int argc, char** argv) {
         VATA::InclParam inclParams;
         inclParams.SetAlgorithm(VATA::InclParam::e_algorithm::antichains);
         inclParams.SetDirection(VATA::InclParam::e_direction::upward);
-        TIME_BEGIN(inclusion_check);
-        bool incl = VATA::ExplicitTreeAut::CheckInclusion(a1, a2, inclParams);
-        TIME_END(inclusion_check);
+        bool incl = bench::measure("inclusion_check", [&] { return VATA::ExplicitTreeAut::CheckInclusion(a1, a2, inclParams); });
         std::cout << "inclusion_check_result: " << incl << std::endl;
         return incl;
     };
@@ -159,9 +133,7 @@ int main(int argc, char** argv) {
 
     try {
         Interpreter<VATA::ExplicitTreeAut> interpret(vataInst, automata);
-        TIME_BEGIN(overall);
-        interpret.run_program(input);
-        TIME_END(overall); 
+        bench::measure("overall", [&] { interpret.run_program(input); });
     } catch (const std::exception &exc) {
         std::cerr << "error: " << exc.what();
         return -1;

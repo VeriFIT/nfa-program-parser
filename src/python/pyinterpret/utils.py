@@ -14,7 +14,8 @@ def timed(*iarg, **ikwargs):
             tic = time.perf_counter()
             result = func(*args, **kwargs)
             toc = time.perf_counter()
-            print(f"{ikwargs.get('timer', 'unknown')}: {toc - tic:0.4f}")
+            # Same precision as bench.hh; four decimals hid everything under 0.1 ms.
+            print(f"{ikwargs.get('timer', 'unknown')}: {toc - tic:.9g}")
             return result
         return inner_wrapper
     return wrapper
