@@ -1,7 +1,9 @@
 cmake_minimum_required (VERSION 3.5.0)
 project (nfa-emp-interpreter)
 
-set (CMAKE_CXX_STANDARD 20)
+# Mata's headers have used C++23 since v1.32.45-dev.21.
+set (CMAKE_CXX_STANDARD 23)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_library(LIBMATA mata REQUIRED)
 find_path(MATA_INCLUDE_DIR NAMES mata/nfa/nfa.hh REQUIRED)
