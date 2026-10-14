@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
   mataInst.is_empty = [&params](const mata::nfa::Nfa &a1) -> bool {
     const bool empty{
         bench::measure("emptiness_check", [&] { return a1.is_lang_empty(); })};
-    bench::report("emptiness_check_result", empty);
+    bench::report("result", empty);
     return empty;
   };
   mataInst.determinize = [&params](const mata::nfa::Nfa &a1) -> mata::nfa::Nfa {
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
     const bool incl{bench::measure("inclusion_check", [&] {
       return mata::nfa::is_included(a1prime, a2prime);
     })};
-    bench::report("inclusion_check_result", incl);
+    bench::report("result", incl);
     return incl;
   };
 

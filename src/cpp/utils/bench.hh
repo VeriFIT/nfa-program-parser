@@ -53,9 +53,14 @@ inline void print_seconds(std::string_view name, Seconds elapsed) {
 } // namespace detail
 
 /// Prints '<name>: <value>': a result, a size, anything that is not a time.
+/// Booleans print as 'true'/'false', as every interpreter's answers do.
 template <typename T> void report(std::string_view name, const T &value) {
   detail::check_name(name);
-  std::cout << name << ": " << value << '\n' << std::flush;
+  if constexpr (std::is_same_v<T, bool>) {
+    std::cout << name << ": " << (value ? "true" : "false") << '\n' << std::flush;
+  } else {
+    std::cout << name << ": " << value << '\n' << std::flush;
+  }
 }
 
 /// Keeps the compiler from optimising away the computation of @p value.

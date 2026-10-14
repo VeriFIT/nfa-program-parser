@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
   awaliInst.is_empty = [](const automaton_t &a1) -> bool {
     bool empty =
         bench::measure("emptiness_check", [&] { return is_empty(trim(a1)); });
-    std::cout << "emptiness_check_result: " << empty << std::endl;
+    bench::report("result", empty);
     return empty;
   };
   awaliInst.determinize = [](const automaton_t &a1) -> automaton_t {
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
     bool incl = bench::measure("inclusion_check", [&] {
       return is_empty(trim(product(a1, complement(complete(determinize(a2))))));
     });
-    std::cout << "inclusion_check_result: " << incl << std::endl;
+    bench::report("result", incl);
     return incl;
   };
 

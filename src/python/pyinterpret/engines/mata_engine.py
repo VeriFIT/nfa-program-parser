@@ -6,7 +6,7 @@ from pyinterpret.utils import timed
 
 
 class MataEngine(engine_base.Engine):
-    @timed(timer="trimming")
+    @timed(timer="trim")
     def trim(self, lhs: libmata.Nfa):
         return lhs.trim()
 
@@ -18,7 +18,7 @@ class MataEngine(engine_base.Engine):
     def minimize(self, lhs: libmata.Nfa):
         return libmata.minimize(lhs)
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union(self, lhs: Any, rhs: Any) -> Any:
         return libmata.union(lhs, rhs)
 
@@ -33,18 +33,18 @@ class MataEngine(engine_base.Engine):
             result = libmata.intersection(result, aut)
         return result
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union_all(self, aut_list: list) -> Any:
         result = aut_list[0]
         for aut in aut_list[1:]:
             result = libmata.union(result, aut)
         return result
 
-    @timed(timer="complement")
+    @timed(timer="compl")
     def complement(self, lhs: Any, alphabet: Any) -> Any:
         return libmata.complement(lhs, alphabet)
 
-    @timed(timer="inclusion")
+    @timed(timer="inclusion_check")
     def inclusion(self, lhs: Any, rhs: Any) -> Any:
         return libmata.is_included(lhs, rhs)
 
@@ -56,7 +56,7 @@ class MataEngine(engine_base.Engine):
     def intersection(self, lhs: Any, rhs: Any) -> Any:
         return libmata.intersection(lhs, rhs)
 
-    @timed(timer="emptiness")
+    @timed(timer="emptiness_check")
     def is_empty(self, aut: Any) -> bool:
         return aut.is_lang_empty()
 

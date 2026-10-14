@@ -95,10 +95,10 @@ def interpret_program(engine, program, automata_db, alphabet):
             automata_db[inst[1]] = engine.trim(engine.union_all(list(automata_db.values())))
         elif inst[0] == Operation.Inclusion:
             result = engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
-            print(f"result: {result}")
+            print(f"result: {'true' if result else 'false'}")
         elif inst[0] == Operation.Emptiness:
             result = engine.is_empty(automata_db[inst[1]])
-            print(f"result: {result}")
+            print(f"result: {'true' if result else 'false'}")
         elif inst[0] == Operation.Determinize:
             automata_db[inst[1]] = engine.determinize(automata_db[inst[2]])
         elif inst[0] == Operation.Minimize:

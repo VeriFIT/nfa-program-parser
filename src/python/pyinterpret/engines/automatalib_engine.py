@@ -96,7 +96,7 @@ class AutomataLibEngine(engine_base.Engine):
         else:
             return lhs.intersection(rhs)
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union(self, lhs: dfa.DFA, rhs: dfa.DFA) -> Any:
         lhs, rhs = self.on_demand_determinize(lhs, rhs)
         if isinstance(rhs, dfa.DFA):
@@ -119,7 +119,7 @@ class AutomataLibEngine(engine_base.Engine):
                 result = result.intersection(aut)
         return result
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union_all(self, aut_list: list[dfa.DFA | nfa.NFA]) -> Any:
         aut_list = self.on_demand_determinize_all(aut_list)
         result = aut_list[0]
@@ -130,19 +130,19 @@ class AutomataLibEngine(engine_base.Engine):
                 result = result.union(aut)
         return result
 
-    @timed(timer="complement")
+    @timed(timer="compl")
     def complement(self, lhs: dfa.DFA, alphabet: Any) -> Any:
         lhs = self.force_determinize(lhs)
         return lhs.complement(minify=False)
 
-    @timed(timer="inclusion")
+    @timed(timer="inclusion_check")
     def inclusion(self, lhs: dfa.DFA, rhs: dfa.DFA) -> Any:
         """TODO: Is this correct? If find this strange"""
         lhs = self.force_determinize(lhs)
         rhs = self.force_determinize(rhs)
         return lhs.issubset(rhs)
 
-    @timed(timer="emptiness")
+    @timed(timer="emptiness_check")
     def is_empty(self, aut: dfa.DFA) -> bool:
         aut = self.force_determinize(aut)
         return aut.isempty()

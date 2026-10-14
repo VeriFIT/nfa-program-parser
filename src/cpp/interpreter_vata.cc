@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
     };
     vataInst.is_empty = [](const VATA::ExplicitTreeAut& a1) -> bool {
         bool empty = bench::measure("emptiness_check", [&] { return a1.IsLangEmpty(); });
-        std::cout << "emptiness_check_result: " << empty << std::endl;
+        bench::report("result", empty);
         return empty;
     };
     vataInst.is_included = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> bool {
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
         inclParams.SetAlgorithm(VATA::InclParam::e_algorithm::antichains);
         inclParams.SetDirection(VATA::InclParam::e_direction::upward);
         bool incl = bench::measure("inclusion_check", [&] { return VATA::ExplicitTreeAut::CheckInclusion(a1, a2, inclParams); });
-        std::cout << "inclusion_check_result: " << incl << std::endl;
+        bench::report("result", incl);
         return incl;
     };
 
