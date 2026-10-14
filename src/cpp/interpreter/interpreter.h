@@ -17,25 +17,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include <mata/nfa/builder.hh>
 #include <mata/nfa/nfa.hh>
-#include <mata/parser/inter-aut.hh>
-#include <mata/parser/mintermization.hh>
 
-#include "../utils/util.h"
+#include "../utils/mata_load.hh"
 #include "parser.h"
-
-// Nfa::alphabet is a raw pointer in mata < 1.32.33 and a shared_ptr since; the
-// overload that does not match the revision in use is simply never called.
-inline void share_alphabet(mata::Alphabet *&dst,
-                           const std::shared_ptr<mata::OnTheFlyAlphabet> &src) {
-  dst = src.get();
-}
-
-inline void share_alphabet(std::shared_ptr<mata::Alphabet> &dst,
-                           const std::shared_ptr<mata::OnTheFlyAlphabet> &src) {
-  dst = src;
-}
 
 template <typename NFA> struct Instance {
   std::function<NFA(const mata::nfa::Nfa &, const std::string &filename)>
@@ -74,6 +59,14 @@ public:
   void run_program(std::ifstream &filename) {
     this->program = parse_program(filename);
     this->param_cnt = 0;
+    // An operation the engine lacks fails the whole run before anything is
+    // timed, rather than being skipped or failing midway.
+    for (const SSA_Call &call : this->program) {
+      if (!supports(call.operation)) {
+        throw std::runtime_error("operation '" + op_name(call.operation) +
+                                 "' is not supported by this interpreter");
+      }
+    }
 
     // load and minterminize all input automata
     prepare_mata_automata();
@@ -123,53 +116,50 @@ public:
     }
   }
 
-private:
-  void prepare_mata_automata() {
-    this->inter_auts.clear();
-    std::vector<mata::IntermediateAut> auts{};
-    bool exists_bv = false;
-    TIME_BEGIN(mataparsing);
-    for (const std::string &fl : this->arguments) {
-      mata::IntermediateAut aut = load_intermediate(fl);
-      exists_bv =
-          exists_bv ||
-          aut.alphabet_type == mata::IntermediateAut::AlphabetType::Bitvector;
-      auts.push_back(aut);
-    }
-    TIME_END(mataparsing);
-    if (exists_bv) {
-      TIME_BEGIN(mataminterm);
-      mata::Mintermization mintermization;
-      auts = mintermization.mintermize(auts);
-      TIME_END(mataminterm);
-    }
-    for (const mata::IntermediateAut &inter_aut : auts) {
-      mata::nfa::Nfa aut_nfa =
-          mata::nfa::builder::construct(inter_aut, this->alphabet.get());
-      share_alphabet(aut_nfa.alphabet, this->alphabet);
-      this->inter_auts.emplace_back(aut_nfa);
+  bool supports(OPERATION op) const {
+    switch (op) {
+    case LOAD_CMD:
+    case LOAD_ALL:
+      return static_cast<bool>(this->instance.mata_to_nfa);
+    case INTERSECTION:
+      return static_cast<bool>(this->instance.intersection);
+    case INTERALL:
+      return static_cast<bool>(this->instance.inter_all);
+    case UNION:
+      return static_cast<bool>(this->instance.uni);
+    case UNIALL:
+      return static_cast<bool>(this->instance.uni_all);
+    case COMPLEMENT:
+      return static_cast<bool>(this->instance.complement);
+    case CONCAT:
+      return static_cast<bool>(this->instance.concat);
+    case EMPTINESS_CHECK:
+      return static_cast<bool>(this->instance.is_empty);
+    case DETERMINIZE:
+      return static_cast<bool>(this->instance.determinize);
+    case MINIMIZE:
+      return static_cast<bool>(this->instance.minimize);
+    case INCLUSION_CHECK:
+      return static_cast<bool>(this->instance.is_included);
+    case WORDS_OF_LENGTHS:
+      return static_cast<bool>(this->instance.words_of_lengths);
+    default: // e.g. load_regex: parsed, but no interpreter runs it
+      return false;
     }
   }
 
-  mata::IntermediateAut load_intermediate(const std::string &filename) {
-    std::fstream fs(filename, std::ios::in);
-    if (!fs) {
-      throw std::runtime_error("could not open file: " + filename);
+  static std::string op_name(OPERATION op) {
+    for (const auto &[name, value] : STR_OP) {
+      if (value == op) {
+        return name;
+      }
     }
+    return std::to_string(op);
+  }
 
-    mata::parser::Parsed parsed;
-    parsed = mata::parser::parse_mf(fs, true);
-    fs.close();
-
-    if (parsed.size() != 1) {
-      throw std::runtime_error(
-          "The number of sections in the input file is not 1\n");
-    }
-    if (!parsed[0].type.starts_with(mata::nfa::TYPE_NFA)) {
-      throw std::runtime_error("The type of input automaton is not NFA\n");
-    }
-
-    return mata::IntermediateAut::parse_from_mf(parsed)[0];
+private:
+  void prepare_mata_automata() {
+    this->inter_auts = bench::load_nfas(this->arguments, this->alphabet);
   }
 
   void load_nfa(const std::string &name, int index) {

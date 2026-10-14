@@ -1,12 +1,17 @@
 import sys
 import os
 import re
+import importlib
 from enum import Enum
 import pyinterpret.engines.base as engine_base
-from pyinterpret.engines.mata_engine import MataEngine
-from pyinterpret.engines.fado_engine import FadoEngine
-from pyinterpret.engines.automatalib_engine import AutomataLibEngine
 from pyinterpret.utils import timed, die
+
+# Engines are imported on demand, so that only the selected engine's library has to be installed.
+ENGINE_MODULES = {
+    "MataEngine": "pyinterpret.engines.mata_engine",
+    "FadoEngine": "pyinterpret.engines.fado_engine",
+    "AutomataLibEngine": "pyinterpret.engines.automatalib_engine",
+}
 
 import libmata.parser as mata_parser
 import libmata.alphabets as alph
@@ -30,7 +35,8 @@ def load_program(src, automata_src):
         die(f"error: {src} does not exist")
     with open(src, 'r') as src_handle:
         lines = src_handle.read().split('\n')
-    lines = [l.strip() for l in lines if l.strip()]
+    # '#' starts a comment line, as in the C++ interpreters.
+    lines = [l.strip() for l in lines if l.strip() and not l.strip().startswith('#')]
     program, automata = [], []
     for inst in [l.replace('(', '').replace(')', '').replace('=', '').split() for l in lines]:
         if 'load_automaton' in inst:
@@ -89,10 +95,10 @@ def interpret_program(engine, program, automata_db, alphabet):
             automata_db[inst[1]] = engine.trim(engine.union_all(list(automata_db.values())))
         elif inst[0] == Operation.Inclusion:
             result = engine.inclusion(automata_db[inst[1]], automata_db[inst[2]])
-            print(f"result: {result}")
+            print(f"result: {'true' if result else 'false'}")
         elif inst[0] == Operation.Emptiness:
             result = engine.is_empty(automata_db[inst[1]])
-            print(f"result: {result}")
+            print(f"result: {'true' if result else 'false'}")
         elif inst[0] == Operation.Determinize:
             automata_db[inst[1]] = engine.determinize(automata_db[inst[2]])
         elif inst[0] == Operation.Minimize:
@@ -112,12 +118,19 @@ def load_automata_db(automata_tokens, automata_sources):
     }
 
 
-@timed(timer="overall")
 def launch():
     if len(sys.argv) < 3:
         die(f"usage: python3 interpreter.py <ENGINE> <PROGRAM.emp> [AUT1.mata, ..., AUTn.mata]")
     engine_name, program_src, automata_src = sys.argv[1], sys.argv[2], sys.argv[3:]
 
+    # Imported before the 'overall' timer starts, as the eager imports used to be.
+    if engine_name in ENGINE_MODULES:
+        importlib.import_module(ENGINE_MODULES[engine_name])
+    run(engine_name, program_src, automata_src)
+
+
+@timed(timer="overall")
+def run(engine_name, program_src, automata_src):
     engine = engine_base.Engine.get_engine(engine_name)
 
     automata_tokens, program = load_program(program_src, automata_src)

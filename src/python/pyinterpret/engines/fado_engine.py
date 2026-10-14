@@ -69,7 +69,7 @@ class FadoEngine(engine_base.Engine):
         lhs, rhs = self.on_demand_determinize(lhs, rhs)
         return lhs & rhs
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union(self, lhs: fa.DFA, rhs: fa.DFA) -> Any:
         lhs, rhs = self.on_demand_determinize(lhs, rhs)
         return lhs | rhs
@@ -87,7 +87,7 @@ class FadoEngine(engine_base.Engine):
             result = result.conjunction(aut)
         return result
 
-    @timed(timer="union")
+    @timed(timer="uni")
     def union_all(self, aut_list: list[fa.DFA]) -> Any:
         aut_list = self.on_demand_determinize_all(aut_list)
         result = aut_list[0]
@@ -95,18 +95,18 @@ class FadoEngine(engine_base.Engine):
             result = result.disjunction(aut)
         return result
 
-    @timed(timer="complement")
+    @timed(timer="compl")
     def complement(self, lhs: fa.DFA, alphabet: Any) -> Any:
         lhs = self.force_determinize(lhs)
         return ~lhs
 
-    @timed(timer="inclusion")
+    @timed(timer="inclusion_check")
     def inclusion(self, lhs: fa.DFA, rhs: fa.DFA) -> Any:
         """Warning: naive implementation"""
         lhs, rhs = self.on_demand_determinize(lhs, rhs)
         result = lhs & ~rhs
         return result.emptyP()
 
-    @timed(timer="emptiness")
+    @timed(timer="emptiness_check")
     def is_empty(self, aut: fa.DFA) -> bool:
         return aut.emptyP()
