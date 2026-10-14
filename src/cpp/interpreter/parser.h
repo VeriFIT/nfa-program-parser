@@ -92,7 +92,7 @@ std::vector<SSA_Call> parse_program(std::ifstream &input) {
       continue;
     }
 
-    const size_t op_at{(tokens.size() > 1 && tokens[1] == "=") ? 2 : 0};
+    const size_t op_at{(tokens.size() > 1 && tokens[1] == "=") ? 2UZ : 0UZ};
     if (op_at >= tokens.size()) {
       throw std::runtime_error("no operation after '=' in: " + line);
     }
