@@ -16,6 +16,7 @@
 
 #include "interpreter/parser.h"
 #include "interpreter/interpreter.h"
+#include "utils/mata_load.hh"
 
 
 
@@ -37,10 +38,10 @@ int main(int argc, char** argv) {
     }
 
     Instance<std::string> dbgInst;
-    dbgInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> std::string {
+    dbgInst.load = bench::load_through_mata([](const mata::nfa::Nfa& t, const std::string& filename) -> std::string {
         std::cout << "load(aut)" << std::endl;
         return "aut";
-    };
+    });
     dbgInst.intersection = [](const std::string& a1, const std::string& a2) -> std::string {
         std::string res = "intersection (" + a1 + ", " + a2 + ")";
         std::cout << res << std::endl;

@@ -8,6 +8,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <mata/nfa/builder.hh>
@@ -84,6 +85,23 @@ inline std::vector<mata::nfa::Nfa> load_nfas(const std::vector<std::string> &fil
 /// a pycobench input line.
 inline std::vector<mata::nfa::Nfa> load_nfas(int argc, char **argv, int first = 1) {
   return load_nfas(std::vector<std::string>(argv + first, argv + argc));
+}
+
+/// The Instance::load of an interpreter reading its inputs through mata:
+/// @p convert turns each loaded NFA, given with its file, into the automaton
+/// of the interpreter's library.
+template <typename Convert> auto load_through_mata(Convert convert) {
+  using Automaton = std::invoke_result_t<Convert &, const mata::nfa::Nfa &,
+                                         const std::string &>;
+  return [convert](const std::vector<std::string> &files) {
+    const std::vector<mata::nfa::Nfa> nfas{load_nfas(files)};
+    std::vector<Automaton> result{};
+    result.reserve(nfas.size());
+    for (size_t i = 0; i < nfas.size(); ++i) {
+      result.push_back(convert(nfas[i], files[i]));
+    }
+    return result;
+  };
 }
 
 } // namespace bench

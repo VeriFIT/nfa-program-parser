@@ -18,6 +18,7 @@
 #include "interpreter/interpreter.h"
 #include "interpreter/parser.h"
 #include "utils/bench.hh"
+#include "utils/mata_load.hh"
 
 using namespace awali::dyn;
 using namespace awali;
@@ -44,36 +45,37 @@ int main(int argc, char **argv) {
   }
 
   Instance<automaton_t> awaliInst;
-  awaliInst.mata_to_nfa = [](const mata::nfa::Nfa &t,
-                             const std::string &filename) -> automaton_t {
-    std::map<mata::nfa::State, state_t> state_map{};
-    std::string awali_alphabet;
-    for (mata::Symbol s : t.alphabet->get_alphabet_symbols()) {
-      if (s > 255) {
-        throw std::out_of_range("awali symbol out of range");
-      }
-      awali_alphabet.push_back(s);
-    }
-    automaton_t awali_aut = automaton_t::from(awali_alphabet);
+  awaliInst.load = bench::load_through_mata(
+      [](const mata::nfa::Nfa &t, const std::string &filename) -> automaton_t {
+        std::map<mata::nfa::State, state_t> state_map{};
+        std::string awali_alphabet;
+        for (mata::Symbol s : t.alphabet->get_alphabet_symbols()) {
+          if (s > 255) {
+            throw std::out_of_range("awali symbol out of range");
+          }
+          awali_alphabet.push_back(s);
+        }
+        automaton_t awali_aut = automaton_t::from(awali_alphabet);
 
-    bench::measure("construction", [&] {
-      for (mata::nfa::State s = 0; s < t.num_of_states(); ++s) {
-        state_t new_state = awali_aut->add_state();
-        state_map[s] = new_state;
-      }
-      for (const auto &tran : t.delta.transitions()) {
-        awali_aut->add_transition(state_map.at(tran.source),
-                                  state_map.at(tran.target), char(tran.symbol));
-      }
-      for (mata::nfa::State s : t.final) {
-        awali_aut->set_final(state_map.at(s));
-      }
-      for (mata::nfa::State s : t.initial) {
-        awali_aut->set_initial(state_map.at(s));
-      }
-    });
-    return awali_aut;
-  };
+        bench::measure("construction", [&] {
+          for (mata::nfa::State s = 0; s < t.num_of_states(); ++s) {
+            state_t new_state = awali_aut->add_state();
+            state_map[s] = new_state;
+          }
+          for (const auto &tran : t.delta.transitions()) {
+            awali_aut->add_transition(state_map.at(tran.source),
+                                      state_map.at(tran.target),
+                                      char(tran.symbol));
+          }
+          for (mata::nfa::State s : t.final) {
+            awali_aut->set_final(state_map.at(s));
+          }
+          for (mata::nfa::State s : t.initial) {
+            awali_aut->set_initial(state_map.at(s));
+          }
+        });
+        return awali_aut;
+      });
   awaliInst.intersection = [](const automaton_t &a1,
                               const automaton_t &a2) -> automaton_t {
     automaton_t res =

@@ -20,6 +20,7 @@
 #include "interpreter/parser.h"
 #include "utils/bench.hh"
 #include "utils/common.h"
+#include "utils/mata_load.hh"
 
 #define SIM_THRESHOLD 1000
 
@@ -39,16 +40,14 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  // pool of alphabets
-  std::vector<mata::OnTheFlyAlphabet> alphabets{};
   std::cout << std::boolalpha;
   // input parameters
   Params params = parse_input_args(argc, argv);
 
   Instance<mata::nfa::Nfa> mataInst;
-  mataInst.mata_to_nfa =
-      [&alphabets](const mata::nfa::Nfa &t,
-                   const std::string &filename) -> mata::nfa::Nfa { return t; };
+  mataInst.load = [](const std::vector<std::string> &files) {
+    return bench::load_nfas(files);
+  };
   mataInst.intersection =
       [&params](const mata::nfa::Nfa &a1,
                 const mata::nfa::Nfa &a2) -> mata::nfa::Nfa {
