@@ -19,6 +19,7 @@
 #include "interpreter/parser.h"
 #include "interpreter/interpreter.h"
 #include "utils/bench.hh"
+#include "utils/mata_load.hh"
 
 VATA::ExplicitTreeAut mata_to_vata(const mata::nfa::Nfa &nfa, const std::string &header, VATA::Parsing::TimbukParser &parser) {
     std::stringstream ss;
@@ -63,7 +64,7 @@ int main(int argc, char** argv) {
     }
 
     Instance<VATA::ExplicitTreeAut> vataInst;
-    vataInst.mata_to_nfa = [](const mata::nfa::Nfa& t, const std::string& filename) -> VATA::ExplicitTreeAut {
+    vataInst.load = bench::load_through_mata([](const mata::nfa::Nfa& t, const std::string& filename) -> VATA::ExplicitTreeAut {
         VATA::Parsing::TimbukParser parser;
         std::stringstream ss;
         ss << "Ops";
@@ -74,7 +75,7 @@ int main(int argc, char** argv) {
         
         VATA::ExplicitTreeAut aut = bench::measure("construction", [&] { return mata_to_vata(t, ss.str(), parser); });
         return aut;
-    };
+    });
     vataInst.intersection = [](const VATA::ExplicitTreeAut& a1, const VATA::ExplicitTreeAut& a2) -> VATA::ExplicitTreeAut {
         VATA::ExplicitTreeAut aut = bench::measure("intersection", [&] { return VATA::ExplicitTreeAut::Intersection(a1, a2); });
         bench::measure("trim", [&] { aut = aut.RemoveUselessStates(); });
